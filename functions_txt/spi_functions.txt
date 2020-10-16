@@ -1,0 +1,96 @@
+spi.deinit()
+
+Deinitialize the SPI object, free all used resources.
+
+spi.read(len [,val])
+
+Read len bytes from SPI device.
+Returns the string of read bytes.
+If the optional val argument is given, outputs val byte on mosi during read (if duplex mode is used).
+
+spi.readinto(buf [,val])
+
+Read bytes from SPI device into buffer object buf. Length of buf bytes are read.
+If the optional val argument is given, outputs val byte on mosi during read (if duplex mode is used).
+
+spi.readfrom_mem(address, length [,addrlen])
+
+Writes address to the spi device and reads length bytes.
+The number of the address bytes to write is determined from the address value (1 byte for 0-255, 2 bytes for 256-65535, ...).
+The number of address bytes to be written can also be set by the optional argument addrlen (1-4).
+Returns the string of read bytes.
+
+spi.write(buf)
+
+Write bytes from buffer object buf to the SPI device.
+Returns True on success, False ion error
+
+spi.write_readinto(wr_buf, rd_buf)
+
+Write bytes from buffer object wr_buf to the SPI device and reads from SPI device into buffer object rd_buf.
+The lenghts of wr_buf and rd_buf can be different.
+In fullduplex mode write and read are simultaneous. In halfduplex mode the data are first written to the device, then read from it.
+Returns True on success, False ion error
+
+spi.select()
+
+Activates the CS pin if it was configured when the spi object was created.
+
+spi.deselect()
+
+Deactivates the CS pin if it was configured when the spi object was created.
+Pages 31
+
+Content
+
+    Home
+
+Building
+
+    Building MicroPython firmware
+        Building on Windows
+    Partition layout & OTA Update
+    File systems
+
+Downloads
+
+    Prebuilt firmwares
+
+Modules
+
+    Network module
+        FTP Server
+        Telnet Server
+        Mqtt client
+        mDNS Server
+        GSM-PPPoS support
+
+    Machine module
+        Neopixel
+        ADC
+        DAC
+        PWM
+        Onewire/DS18x20
+        RTC
+        Timer
+        UART
+        GPS
+        I2C
+        SPI
+        Pin
+
+    Display module
+
+    SSH Module
+
+    Curl Module
+
+    Thread support
+        Thread example
+
+Frozen Modules
+
+    MicroWebServer
+
+Python Examples
+Clone this wiki locally

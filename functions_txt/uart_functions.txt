@@ -1,0 +1,97 @@
+uart.init([args])
+
+All arguments are optional and must be entered as kw arguments (arg=value)
+Argument 	Description
+baudrate 	The baudrate to be used for this uart; default: 115200
+The actual baud rate may be slightly different than the set one due to ESP32 clock divider limitations.
+The actual baudrate is shown when printing the uart status.
+bits 	Number of bits transfered, 5 - 8; default: 8
+parity 	Parity generation:
+None no parity, 0 Odd, 1 Even; default: no parity
+stop 	Number of stop bits:
+1 one stop bit, 2 two stop bits, 3 1.5 stop bits; default: 1
+tx 	TX pin; no defaults
+rx 	RX pin; no defaults
+cts 	CTS pin; default: not used
+rts 	RTS pin; default: not used
+timeout 	Timeout for uart read operations in milliseconds; default: 0
+buffer_size 	Size of the receive buffer in bytes. Range: 512 - 8192; default 512
+Used only when creating the UART instance, ignored in init()
+lineend 	line end string for readln() method, 2 character max; default: '\r\n'
+Usually set to '\r\n', '\n\r', '\r' or '\n', but other values can be used for special purposes.
+If the lineend contains characters > \x7f, the argument must be entered as bytearray (e.g., b'\xff\xfe')
+inverted 	Set the inverted pins
+Tx, Rx, CTS and RTC can be inverted
+use constants INV_RX, INV_TX, INV_CTS, INV_RTS
+Several constants can be combined with or operator.
+uart.write(buf [, len [, off]])
+
+Write bytes from buffer object ḃuf to UART
+If no other arguments are given, writes buffer length bytes.
+If len argument is given, writes ŀen bytes.
+If off argument is given, starts writting from off position in buf.
+uart.write_break(buf, break_num [, len])
+
+Write bytes from buffer object ḃuf to UART.
+After the data are writthe emit the break signal for the duration of break_num bits
+If len argument is given, writes only ŀen bytes from buffer.
+uart.any()
+
+Returns number of bytes available in the receive buffer.
+uart.read([len])
+
+If no argument is given, reads all available bytes from the receive buffer.
+If len argument is given, reads len bytes from the receive buffer.
+If not enough bytes are available in the input buffer and uart timeout is set to a value greater than 0, waits until len bytes are received or timeout ms expires.
+Returns bytearray of the read bytes.
+uart.readinto(buf [,len])
+
+If reads buffer buf length bytes from the receive buffer into buf.
+If len argument is given, reads maximum of len bytes from the receive buffer.
+If not enough bytes are available in the input buffer and uart timeout is set to a value greater than 0, waits until buffer length or len bytes are received or timeout ms expires.
+Returns bytearray of the read bytes.
+uart.readline([max_len])
+
+Reads all bytes from the receive buffer up to the line end character \n.
+If the line end character is not found in the input buffer and uart timeout is set to a value greater than 0, waits until line end character is received or timeout ms expires.
+If the timeout expires before \n is received, returns all available bytes from the receive buffer
+If the line end character is not found in the input buffer and uart timeout is 0, returns all available bytes from the receive buffer
+Returns bytearray of the read bytes.
+Line end character \n is incleded in the returned bytearray.
+uart.readln([timeout])
+
+Similar to uart.readline() but waits for lineend string defined on creating the uart instance or set in uart.init()
+If the timeout argument is not given, the global uart's timeout walue is used.
+If the timeout argument is given, waits for timeout ms.
+Returns a string of received characters.
+Line end characters are included in the returned string.
+If the lineend string is not found, returns None.
+This method is faster than uart.readline().
+uart.flush()
+
+Flush (empty) the uart's receive buffer.
+uart.callback(type, func, pattern, data_len)
+
+The callback function can be defined for various UART events.
+The callback on received number of bytes, on specific pattern received and on UART error can be defined. For type argument use one of defined constants:
+CBTYPE_DATA, CBTYPE_PATTERN, CBTYPE_ERROR
+func argument is the Python function to be executed on UART event.
+Set it to None to disable previously enabled event.
+
+    The callback on received number of bytes is executed when the specified number of bytes (data_len) are received.
+    The callback function receives 3-items tuple argument: (uart_num, 1, received_string)
+    The returned data are removed from the receive buffer.
+    The callback on pattern is executed when the specified sequence of bytes (pattern) is received.
+    pattern can be any string of up to 16 bytes.
+    If the pattern contains characters > \x7f, the argument must be entered as bytearray (e.g., b'\xff\xfe\x03\x41')
+    The callback function receives 3-items tuple argument: (uart_num, 2, received_string)
+    The returned data, including the pattern, are removed from the receive buffer.
+    The received_string does not include the pattern.
+    The callback on uart error is executed when some error occurs in uart transfer.
+    The callback function receives 3-items tuple argument: (uart_num, 3, error_code)
+    Possible values for error_code:
+    1 BREAK condition on RX detected
+    2 UART buffer full
+    3 UART FIFO overflow
+    4 Frame error
+    5 Parity error

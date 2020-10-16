@@ -1,0 +1,61 @@
+ow.deinit()
+
+Deinitialize the 1-wire bus and free the used resources.
+
+ow.scan([asnum])
+
+Scan 1-wire bus for attached devices.
+
+Returns the tuple of detected devices ROM codes.
+
+Optional asnum argument defines the format of the rom code returned.
+If False (default), the rom code is returned as hex string.
+If True, the rom code is returned as tuple: (family_code, serial_number, crc)
+
+>>> ow.scan()
+('6e000000c86a8e28', '02000000c82a8928')
+>>> ow.scan(True)
+((40, 13134478, 110), (40, 13118089, 2))
+
+ow.search([asnum])
+
+Same as ow.scan.
+
+ow.rom_code(dev)
+
+Return the ROM code of the device dev as hex string.
+
+>>> ow.rom_code(0)
+'6e000000c86a8e28'
+
+
+ow.crc8(buf)
+
+Returns the crc8 checksum byte for the buf argument
+
+>>> ow.crc8('123456abcdef')
+12
+>>> buf = bytearray([0x11,0x12,0x13,0x67,0xf7])
+>>> ow.crc8(buf)
+227
+
+
+    The following low-level methods can be used
+    to implement Python drivers for various 1-wire devices.
+
+ow.reset()
+
+Reset the 1-wire bus.
+ow.readbyte()
+
+Read one byte from the 1-wire device.
+ow.writebyte(val)
+
+write one byte val to the 1-wire device.
+ow.readbytes(len)
+
+Read len bytes from the 1-wire device.
+Returns string of read bytes.
+ow.writebytes(buf)
+
+Write multiple bytes to 1-wire device from string or bytearray buf.

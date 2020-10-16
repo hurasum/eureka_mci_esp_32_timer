@@ -1,0 +1,41 @@
+pwm.init([ freq=f] [, duty=d] [, timer=tm])
+
+Reinitialize the pwm channel
+Arg 	Description
+freq 	optional, if not given, the frequency is not changed
+duty 	optional, if not given, the duty cycle is not changed
+timer 	optional, if not given, the pwm timer is not changed
+
+Changing the frequency or timer will affect all pwm channels using the same timer.
+
+pwm.deinit()
+
+Deinitialize and free the pwm channel, stop pwm output.
+
+The echannel can be reinitializeded using pwm.init().
+
+pwm.freq([freq])
+
+With no argument, return the current pwm channel frequency.
+Set the new pwm frequency to ḟreq Hz.
+All pwm channels using the same timer will be affected.
+
+pwm.duty([duty_perc])
+
+With no argument, return the current pwm channel duty cycle.
+Set the new pwm duty cycle to duty_perc in %. The value can be given as float.
+
+pwm.pause()
+
+Pause the pwm channel timer, no pwm output will be present on pwm pin.
+All pwm channels using the same timer will be affected.
+
+pwm.resume()
+
+Resume the pwm channel timer, pwm output will be present on pwm pin.
+All pwm channels using the same timer will be affected.
+
+
+machine.PWM.list()
+
+List the characteristics of all active pwm channels. 

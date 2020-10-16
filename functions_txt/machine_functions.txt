@@ -1,0 +1,223 @@
+machine.freq([new_freq])
+
+Get or set the current ESP32 CPU clock in Hz
+Executed without an argument returns the current CPU clock in Hz.
+
+When setting the frequency, new_freq argument can be entered in Hz or MHz.
+Only frequencies 2MHz, 80Mhz, 160MHz, 240MHz and crystal frequency are supported.
+If Power Management is enabled, the maximum frequency is set.
+machine.reset()
+
+Reset the ESP32
+machine.wake_reason()
+
+Returns 2-items tuple containing numeric representation of reset and wake-up reasons
+(reset_reason, wakeup_reason)
+
+Possible reset_reason values:
+0 - Power on reset
+1 - Hard reset
+2 - WDT reset
+3 - Deepsleep wake-up
+4 - Soft reset
+5 - Brownout reset
+6 - Soft reset
+7 - RTC WDT reset
+8 - Unknown reset reason
+
+Possible wakeup_reason values:
+0 - no wake-up reason
+1 - EXT_0 wake-up
+2 - EXT_1 wake-up
+3 - Touchpad wake-up
+4 - RTC wake-up
+5 - ULP wake-up
+machine.wake_description()
+
+Returns 2-items tuple containing string description of reset and wake-up reasons
+machine.unique_id()
+
+Returns bytearray (6 bytes) of unique ESP32 id.
+Base MAC address which is factory-programmed by Espressif is used as unique_id.
+machine.WDT([enable])
+
+Get WDT (watchdog timer) status, optionally evable/disable WDT
+Set the optional argument enable to True to enable the watch dog, set it to False to disable the watch dog.
+The watchdog timeout period is set in menuconfig:
+→ Component config → ESP32-specific → Task Watchdog timeout period (seconds)
+default value is is 15 seconds.
+machine.resetWDT()
+
+Reset (feed) the watchdog timer.
+machine.stdin_disable(pattern)
+
+Disable stdin, no characters will be processed from standard input until the pattern is matched.
+Maximum pattern length is 15 bytes.
+If the pattern contains characters > \x7f, the argument must be entered as bytearray (e.g., b'\xff\xfe\x03\x41').
+The pattern must be entered fast enough to arrive before the stdin timeout expires.
+
+>>> import machine
+>>> machine.stdin_disable("123abc")
+I (8855) [stdin]: Disabled, waiting for pattern [123abc]
+# no characters on stdin are accepted
+>>> I (25508) [stdin]: Pattern matched, enabled
+
+>>> 
+
+machine.stdin_get(len, timeout)
+
+Get string from stdin, wait maximum timeout ms
+None is returned on timeout.
+machine.stdout_put(buf)
+
+Put the content of the buf object (string, bytearray, ...) to stdout.
+Returns number of bytes put.
+machine.SetStackSize(value)
+
+Set the new MicroPython stack size.
+The stack size is stored in the NVM and will be used on the next (and all consecutive) reboot.
+machine.SetHeapSize(value)
+
+Set the new MicroPython heap size.
+The heap size is stored in the NVM and will be used on the next (and all consecutive) reboot.
+machine.heap_info()
+
+Prints the detailed information about the ESP32 heap space outside the MicroPython heap.
+If psRAM is used, the information about psRAM heap is also printed.
+
+>>> machine.heap_info()
+Heap outside of MicroPython heap:
+#--------------------------------
+              Free: 237632
+         Allocated: 20196
+      Minimum free: 236212
+      Total blocks: 87
+Largest free block: 113804
+  Allocated blocks: 82
+       Free blocks: 5
+
+SPIRAM info:
+#-----------
+              Free: 1048532
+         Allocated: 3145728
+      Minimum free: 1048532
+      Total blocks: 2
+Largest free block: 1048532
+  Allocated blocks: 1
+       Free blocks: 1
+>>> 
+
+
+machine.deepsleep(timeout)
+
+Put the ESP32 into deep sleep mode.
+You may want to configure some wake-up sorces using RTC module. timeout sets the sleep time in ms. If set to 0, the timer is not used as wake-up source.
+
+>>> machine.deepsleep(10000)
+ESP32: DEEP SLEEP
+ets Jun  8 2016 00:22:57
+
+rst:0x5 (DEEPSLEEP_RESET),boot:0x3f (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0018,len:4
+load:0x3fff001c,len:4852
+load:0x40078000,len:0
+load:0x40078000,len:14728
+entry 0x40078d64
+
+Internal FS (SPIFFS): Mounted on partition 'internalfs' [size: 1048576; Flash address: 0x1F0000]
+----------------
+Filesystem size: 956416 B
+           Used: 512 B
+           Free: 955904 B
+----------------
+
+FreeRTOS running on BOTH CORES, MicroPython task running on both cores.
+Running from Factory partition starting at 0x10000, [MicroPython].
+ 
+ Reset reason: Deepsleep wake-up
+Wakeup source: RTC wake-up
+    uPY stack: 19456 bytes
+     uPY heap: 3073664/5520/3068144 bytes (in SPIRAM using heap_caps_malloc)
+
+MicroPython ESP32_LoBo_v3.1.16 - 2017-02-04 on ESP32 board with ESP32
+Type "help()" for more information.
+>>> import machine
+>>> machine.wake_description()
+('Deepsleep wake-up', 'RTC wake-up')
+>>> 
+
+machine.random(limit [,upper_limit])
+
+Returns random number between 0 and limit
+If the optional upper_limit argument is given, returns random number between limit and upper_limit
+
+machine.internal_temp()
+
+Read the internal ESP32 temperature sensor
+Returns tuple of raw value and the temperature in °C
+Returned temperature has in internal offset which may be different on each ESP32 chip.
+Use this function only to measure the relative temperatures.
+
+>>> import machine
+>>> machine.internal_temp()
+(134, 56.66666793823243)
+
+
+
+Non-volatile storage support
+
+    Non-volatile storage (NVS) is designed to store key-value pairs in flash.
+    Currently NVS uses a portion of main flash memory through spi_flash_{read|write|erase} APIs.
+
+Integer and string values can be saved into NVS.
+Key - Value pairs are used as arguments for NVS methods.
+
+Variables saved in NVS are preserved on power off.
+machine.nvs_setint(key, value)
+
+Save the integer value with name key in NVS
+machine.nvs_getint(key)
+
+Return the saved integer key from NVS
+
+>>> machine.nvs_setint('myvar', 12345678)
+>>> machine.nvs_getint('myvar')
+12345678
+>>> 
+
+machine.nvs_setstr(key, value)
+
+Save the string value with name key in NVS
+machine.nvs_getstr(key)
+
+Return the saved string key from NVS
+
+>>> machine.nvs_setstr('mystr', "String saved in NVS")
+>>> machine.nvs_getstr('mystr')
+'String saved in NVS'
+>>> 
+
+machine.nvs_erase(key)
+
+Erase the variable key from NVS
+machine.nvs_erase_all()
+
+Erase all variables from NVS
+
+ESP32 loging handling
+
+ESP32 log messages can be disabled or enabled with the desired log level.
+Logging for the individual components or all components can be set.
+The following constants can be used for setting the log level:
+machine.LOG_NONE, machine.LOG_ERROR, machine.LOG_WARN
+machine.LOG_INFO, machine.LOG_DEBUG, machine.LOG_VERBOSE
+machine.loglevel(component, log_level)
+
+Set the log level of the component to level log_level
+component is the name of the component as it apears in log messages.
+'*' can be used to set the global log level.
+
+machine.loglevel("wifi", machine.LOG_DEBUG)

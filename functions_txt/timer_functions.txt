@@ -1,0 +1,63 @@
+tm.deinit()
+
+Deinitialize the timer, free the hardware timer resources.
+Timer 0, running in EXTBASE mode, canno't be freed if some EXTENDED timers are still running.
+
+tm.value()
+
+Returns the current timer counter value in µs if timer mode is CHRONO or in ms for other modes.
+Most useful for CHRONO mode timers, as it returns the actual elapsed time.
+
+tm.pause()
+
+Pause the timer.
+Timer 0, running in EXTBASE mode, canno't be paused if some EXTENDED timers are running.
+
+tm.stop()
+
+Stop the timer. Alias for tm.pause()
+Only use for timer in CHRONO mode.
+
+tm.resume()
+
+Resume the previously paused timer.
+
+
+tm.start()
+
+Resume the previously paused/stopped timer.
+Same function as tm.resume(), but resets the timer value to 0.
+Only use for timer in CHRONO mode.
+
+tm.reshot()
+
+Start the ONE_SHOT timer again.
+Only use for timer in ONE_SHOT mode.
+
+tm.timernum()
+
+Returns the hw timer number this timer uses.
+
+
+tm.events()
+
+Returns the number of timer events and number of executed callbacks.
+The tuple is returned: (num_events, num_cb).
+If no callbacks were missed, num_events = num_cb.
+
+tm.isrunning()
+
+Returns True if the timmer is currently running, False if not.
+
+tm.period([period])
+
+Get or set the timer period.
+Executed without argument, returns the current timer's period.
+Executed with period argument, changes the timer's period to the new value.
+
+tm.callback([cb_func])
+
+Disable or change the timer's callback function.
+Executed without argument, disables timer's callback.
+Executed with cb_func argument, changes the timer's calback function to the new one.
+Only use for timers in ONE_SHOT or PERIODIC modes.
