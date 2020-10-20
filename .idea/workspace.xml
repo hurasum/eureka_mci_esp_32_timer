@@ -19,7 +19,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../SW_TEST" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -68,37 +68,65 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1351" height="340" key="GridCell.Tab.0.bottom" timestamp="1602848292322">
+    <state x="691" y="355" key="FileChooserDialogImpl" timestamp="1603086946035">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.0.bottom/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
-    <state width="1351" height="340" key="GridCell.Tab.0.center" timestamp="1602848292322">
+    <state x="691" y="355" key="FileChooserDialogImpl/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603086946035" />
+    <state x="441" y="15" key="FileDocumentManager.FileCacheConflict" timestamp="1603197438856">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.0.center/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
-    <state width="1351" height="340" key="GridCell.Tab.0.left" timestamp="1602848292322">
+    <state x="441" y="15" key="FileDocumentManager.FileCacheConflict/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603197438856" />
+    <state width="1351" height="340" key="GridCell.Tab.0.bottom" timestamp="1603119439999">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.0.left/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
-    <state width="1351" height="340" key="GridCell.Tab.0.right" timestamp="1602848292322">
+    <state width="1351" height="340" key="GridCell.Tab.0.bottom/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state width="1351" height="340" key="GridCell.Tab.0.center" timestamp="1603119439999">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.0.right/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
-    <state width="1351" height="340" key="GridCell.Tab.1.bottom" timestamp="1602848292322">
+    <state width="1351" height="340" key="GridCell.Tab.0.center/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state width="1351" height="340" key="GridCell.Tab.0.left" timestamp="1603119439999">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.1.bottom/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
-    <state width="1351" height="340" key="GridCell.Tab.1.center" timestamp="1602848292322">
+    <state width="1351" height="340" key="GridCell.Tab.0.left/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state width="1351" height="340" key="GridCell.Tab.0.right" timestamp="1603119439999">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.1.center/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
-    <state width="1351" height="340" key="GridCell.Tab.1.left" timestamp="1602848292322">
+    <state width="1351" height="340" key="GridCell.Tab.0.right/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state width="1351" height="340" key="GridCell.Tab.1.bottom" timestamp="1603119439999">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.1.left/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
-    <state width="1351" height="340" key="GridCell.Tab.1.right" timestamp="1602848292322">
+    <state width="1351" height="340" key="GridCell.Tab.1.bottom/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state width="1351" height="340" key="GridCell.Tab.1.center" timestamp="1603119439999">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
-    <state width="1351" height="340" key="GridCell.Tab.1.right/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1602848292322" />
+    <state width="1351" height="340" key="GridCell.Tab.1.center/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state width="1351" height="340" key="GridCell.Tab.1.left" timestamp="1603119439999">
+      <screen x="0" y="0" width="1822" height="1200" />
+    </state>
+    <state width="1351" height="340" key="GridCell.Tab.1.left/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state width="1351" height="340" key="GridCell.Tab.1.right" timestamp="1603119439999">
+      <screen x="0" y="0" width="1822" height="1200" />
+    </state>
+    <state width="1351" height="340" key="GridCell.Tab.1.right/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
+    <state x="574" y="265" key="search.everywhere.popup" timestamp="1603174790045">
+      <screen x="0" y="0" width="1822" height="1200" />
+    </state>
+    <state x="574" y="265" key="search.everywhere.popup/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603174790045" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="self.single_sec." language="Python" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

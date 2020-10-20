@@ -20,6 +20,12 @@ class PIN:
     OUT_OD = "OUT_OD"
     INOUT = "INOUT"
     INOUT_OD = "INOUT_OD"
+    IRQ_DISABLE = "IRQ_DISABLE"
+    IRQ_RISING = "IRQ_RISING"
+    IRQ_FALLING = "IRQ_FALLING"
+    IRQ_ANYEDGE = "IRQ_ANYEDGE"
+    IRQ_LOLEVEL = "IRQ_LOLEVEL"
+    IRQ_HILEVEL = "IRQ_HILEVEL"
 
     def init(self, mode, pull, value, handler, trigger, debounce=0, acttime=0):
         """
