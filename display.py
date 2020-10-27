@@ -280,7 +280,7 @@ class TFT:
         """
         pass
 
-    def text(self, x, y, text,  color: Optional = None):
+    def text(self, x, y, text, color: Optional = None):
         """
         Display the string text at possition (x,y).
         If color is not given, current foreground color is used.

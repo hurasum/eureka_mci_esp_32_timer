@@ -7,6 +7,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -26,7 +33,28 @@
       <recent name="C:\repository\esp32_python" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.create_typing">
+    <configuration name="create_typing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="esp32_python" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/functions_txt" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/functions_txt/create_typing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="esp32_python" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -50,6 +78,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.create_typing" />
         <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
@@ -68,53 +97,74 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="691" y="355" key="FileChooserDialogImpl" timestamp="1603086946035">
+    <state x="691" y="355" key="FileChooserDialogImpl" timestamp="1603779386858">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state x="691" y="355" key="FileChooserDialogImpl/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603779386858" />
     <state x="691" y="355" key="FileChooserDialogImpl/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603086946035" />
     <state x="441" y="15" key="FileDocumentManager.FileCacheConflict" timestamp="1603197438856">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
     <state x="441" y="15" key="FileDocumentManager.FileCacheConflict/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603197438856" />
-    <state width="1351" height="340" key="GridCell.Tab.0.bottom" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.0.bottom" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.0.bottom/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.0.bottom/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state width="1351" height="340" key="GridCell.Tab.0.center" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.0.center" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.0.center/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.0.center/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state width="1351" height="340" key="GridCell.Tab.0.left" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.0.left" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.0.left/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.0.left/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state width="1351" height="340" key="GridCell.Tab.0.right" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.0.right" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.0.right/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.0.right/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state width="1351" height="340" key="GridCell.Tab.1.bottom" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.1.bottom" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.1.bottom/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.1.bottom/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state width="1351" height="340" key="GridCell.Tab.1.center" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.1.center" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.1.center/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.1.center/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state width="1351" height="340" key="GridCell.Tab.1.left" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.1.left" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.1.left/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.1.left/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state width="1351" height="340" key="GridCell.Tab.1.right" timestamp="1603119439999">
+    <state width="1351" height="340" key="GridCell.Tab.1.right" timestamp="1603792373245">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="1351" height="340" key="GridCell.Tab.1.right/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603792373245" />
     <state width="1351" height="340" key="GridCell.Tab.1.right/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603119439999" />
-    <state x="574" y="265" key="search.everywhere.popup" timestamp="1603174790045">
+    <state width="548" height="446" key="SwitcherDM" timestamp="1603789318116">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
+    <state width="548" height="446" key="SwitcherDM/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603789318116" />
+    <state x="574" y="265" width="672" height="678" key="search.everywhere.popup" timestamp="1603659457096">
+      <screen x="0" y="0" width="1822" height="1200" />
+    </state>
+    <state x="574" y="265" width="672" height="678" key="search.everywhere.popup/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603659457096" />
     <state x="574" y="265" key="search.everywhere.popup/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603174790045" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/functions_txt/create_typing.py</url>
+          <line>36</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
           <properties notifyOnTerminate="true" exception="BaseException">

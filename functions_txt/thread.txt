@@ -1,0 +1,289 @@
+_thread Module
+
+Python functions can run in a thread.
+
+It means the function execution runs in a ESP32 FreeRTOS task separate from the main MicroPython thread and apears as running in background.
+Features
+
+    Maximum number of threads that can be started is defined via menuconfig. As each thread needs some memory (for stack), creating large amount of threads can couse stack overflow.
+    The thread function can be any object of type function (defined with def) or bound_method (defined as class method).
+    The function can accept arguments, both positional and kw, which must be matched in _thread.start_new_thread
+    Thread function is usualy defined as infinite loop. See the thread function template for more details.
+    Threads can be created, suspended (paused), resumed and stopped.
+    Threads can comunicate with each other or the main thread (REPL) using notifications and messages.
+    The notifications can also be used for inter-thread synchronization.
+    Threads can be locked/unlocked to enable safe access the shared resources or to enable the execution of part of the code with maximum performance
+    Thread terminates when the thread function is finished, the return is executed in the thread function or on exception in the thread function.
+    If the thread function runs periodically, it is recomended to use utime.sleep, utime.sleep_ms or _thread.wait functions.
+    While those function are executed, no CPU or MicroPython resources are used, the waiting is handled on FreeRTOS level.
+
+Methods
+
+_thread.start_new_thread(th_name, th_func, args [, kwargs])
+
+Start a new thread and return its identifier.
+The returned thread ID is used with most methods to access the created thread.
+Argument 	Description
+th_name 	string, used to describe the thread
+th_func 	MicroPython object of type function (defined with def) or bound_method (defined as class method).
+This is the main thread function which usualy runs in infinite loop. See the thread function template for more details.
+args 	the thread positional arguments given as tuple of objects.
+If the thread function requires no arguments, an empty tuple must be given - ()
+kwargs 	optional; if used, must be given as dictionary of keyword arguments
+
+npth =_thread.start_new_thread("Neopixel", thrainbow, ())
+bmeth =_thread.start_new_thread("BME280", bmerun, (60,))
+testth = _thread.start_new_thread("Test", thread_entry, (10, 20), {'a2': 0, 'a3': 1})
+
+
+_thread.stack_size([size])
+
+If executed without arguments returns the thread stack size (in bytes) used when creating new threads.
+The optional size argument specifies the stack size to be used for subsequently created threads.
+
+The maximum stack size used by the thread can be checked with _thread.list()
+
+_thread.stack_size(10*1024)
+testth = _thread.start_new_thread("Test",thread_entry, (10, 20), {'a2': 0, 'a3': 1})
+
+
+_thread.allowsuspend(True | False)
+
+The default behavior of the thread after it is created is to not allow to be suspended.
+This method can be used to explicitly allow the thread suspension.
+The method must be called from the thread function.
+_thread.suspend(th_id)
+
+Suspend the execution of the thread th_id function on FreeRTOS level.
+_thread.resume(th_id)
+
+Resume the execution of the thread th_id function previously suspended with _thread.suspend() on FreeRTOS level.
+_thread.stop(th_id)
+
+Terminate the thread th_id, free all allocated memory.
+
+    The thread function must handle _thread.EXIT notification
+    See the thread function template.
+
+
+_thread.getThreadName(th_id)
+
+Get the name of the thread with ID th_id.
+
+_thread.getSelfName()
+
+Get the name of the thread executing this method.
+The method must be called from the thread function.
+
+_thread.getReplID()
+
+Get the thread ID of the main (REPL) thread.
+Can be used to send notifications/messages to the main thread.
+_thread.getMainID()
+
+Same as _thread.getReplID()
+
+_thread.wait([timeout])
+
+Suspend the execution of the thread function until some notification is received or timeout expires.
+If the optional argument timeout is not given, the function will wait indefinitely.
+Returns integer >0 (the notification value) if the notification was received while waiting or 0 on timeout.
+The method must be called from the thread function.
+
+_thread.getnotification()
+
+Check if any notification was sent to the thread executing this method.
+Returns integer >0 (the notification value) if there was pending notification or 0 if not.
+The method must be called from the thread function.
+
+_thread.getmsg()
+
+Check if any message was sent to the thread executing this method.
+Returns 3-items tuple: (message_type, sender_ID, message)
+message_type = 0 -> message = None
+message_type = 1 -> message type is integer
+message_type = 2 -> message type is string
+
+The method must be called from the thread function.
+
+_thread.notify(th_id, value)
+
+Send notification to the thread with id th_id.
+Value range: 0 < value < 65536 .
+Constants _thread.PAUSE, _thread.SUSPEND, _thread.RESUME, _thread.STOP, _thread.EXIT can be used for system notifications.
+
+_thread.sendmsg(th_id, msg)
+
+Send message to the thread with id th_id.
+
+msg argument can be integer or string.
+
+_thread.lock()
+
+Lock the thread execution to the calling thread.
+Must always be executed in combination with _thread.unlock().
+
+During the execution of code between _thread.lock() and _thread.unlock(), all other threads will not execute.
+That way, the maximum performance can be achieved for some limited time.
+Running the code between _thread.lock() and _thread.unlock() can also be used when accessing some shared resources, e.g. the global variables.
+
+_thread.unlock()
+
+UnLock the thread after _thread.lock() and allow other threads to execute.
+_thread.lock() and _thread.unlock() must always be used in pairs.
+
+_thread.replAcceptMsg([flag])
+
+Returns True if the main thread (REPL) is allowed to accept messages.
+If executed from the main thread, optional flag argument (True | False) can be given to allow/dissallow accepting messages in the main thread.
+
+_thread.status(th_id)
+
+Returns the thread status code:
+Running: _thread.RUNNING (0)
+Suspended: _thread.SUSPENDED (1)
+Waiting: _thread.WAITING (2)
+Terminated: _thread.TERMINATED (-1)
+
+_thread.list([print])
+
+Print the status of all created threads.
+If the optional print argument is set to False, returns the tuple with created threads information:
+(th_id, type, name, state, stack_size, max_stack_used)
+
+>>> _thread.list()                                                                                                                          
+ID=1073586276, Name: THRD#2, State: waiting, Stack=4096, MaxUsed=948, Type: PYTHON                                                          
+ID=1073581228, Name: THRD#1, State: waiting, Stack=4096, MaxUsed=956, Type: PYTHON                                                          
+ID=1073447944, Name: MainThread, State: running, Stack=20480, MaxUsed=2616, Type: MAIN                                                      
+>>> _thread.list(False)                                                                                                                     
+((1073586276, 2, 'THRD#2', 2, 4096, 948), (1073581228, 2, 'THRD#1', 2, 4096, 956), (1073447944, 1, 'MainThread', 0, 20480, 2616))           
+>>> 
+
+
+
+Constants
+For use in thread notification functions:
+
+_thread.PAUSE, _thread.SUSPEND, _thread.RESUME, _thread.STOP, _thread.EXIT
+For use in thread status:
+
+_thread.RUNNING, _thread.SUSPENDED, _thread.WAITING, _thread.TERMINATED
+
+Recommended thread function template
+
+def th_func(arg):
+    #print("TH_FUNC: started")
+    # ------------------------------------------------------------
+    # Allow suspending this thread from other threads using
+    # _thread.suspend(th_id) / _thread.resume(th_id) functions.
+    # If not set, the thread connot be suspended.
+    # Still, "soft" suspend handling via notifications can be used
+    # ------------------------------------------------------------
+    _thread.allowsuspend(True)
+
+    # ---------------------------------------------
+    # Thread function usually runs in infinite loop
+    # ---------------------------------------------
+    while True:
+        # ================================================
+        # It is recommended to handle thread notifications
+        # ================================================
+        ntf = _thread.getnotification()
+        if ntf:
+            # some notification received
+            if ntf == _thread.EXIT:
+                # -------------------------------------------------
+                # Return from thread function terminates the thread
+                # -------------------------------------------------
+                #print("TH_FUNC: terminated")
+                return
+            elif ntf == _thread.SUSPEND:
+                # -------------------------------------------------------------------
+                # The thread can be suspended using _thread.suspend(th_id) function,
+                # but sometimes it is more convenient to implement the "soft" suspend
+                # -------------------------------------------------------------------
+                #print("TH_FUNC: suspended")
+                # wait for RESUME notification indefinitely, some other thread must
+                # send the resume notification: _thread.notify(th_id, _thread.RESUME)
+                while _thread.wait() != _thread.RESUME:
+                    pass
+            # ---------------------------------------------
+            # Handle the application specific notifications
+            # ---------------------------------------------
+            elif ntf == 1234:
+                # Your notification handling code
+                pass
+            else:
+                # -----------------------------
+                # Default notification handling
+                # -----------------------------
+                pass
+
+        # ----------------------------------
+        # Put your thread function code here
+        # ----------------------------------
+        x1 = 23.45
+
+        # ---------------------------------------------------------------------------
+        # Thread function execution can be suspended until a notification is received
+        # Without argument '_thread.wait' will wait for notification indefinitely
+        # If the timeout argument is given, the function will return even if
+        # no notification is received after the timeout expires with result 'None'
+        # ---------------------------------------------------------------------------
+        ntf = _thread.wait(30000)
+        if ntf:
+            # --------------------------------------------
+            # Check if terminate notification was received
+            # --------------------------------------------
+            if ntf == _thread.EXIT:
+                return
+            #print("TH_FUNC: Notification received: ", ntf)
+
+            # ---------------------------------------------
+            # Execute some code based on notification value
+            # ---------------------------------------------
+            if ntf == 77:
+                print("Notification 77 received"
+            elif ntf == 8888:
+                myvar += 100
+        else:
+            # ---------------------------------
+            # Execute some code on wait timeout
+            # ---------------------------------
+            print("TH_FUNC: Wait notification timeout")
+
+        # ---------------------------------------------------------------
+        # - Using sleep in thread function                              -
+        # ---------------------------------------------------------------
+        # 'utime.sleep(sec, True)' & 'utime.sleep_ms(ms, True)' functions returns the
+        # actual ellapsed sleep time. The sleep will be interrupted if
+        # a notification is received and the returned value will be less
+        # than the requested one
+        # ---------------------------------------------------------------
+        # Example:
+        print("TH_FUNC: Loop started")
+        for i in range(0, 5):
+            print("TH_FUNC: Loop no:", i)
+            sleep_time = utime.sleep_ms(10000, True)
+            if sleep_time < 10000:
+                # Notification received while sleeping 
+                print("TH_FUNC: Notification while sleeping", st)
+                # Sleep for the remaining interval if needed
+                utime.sleep_ms(10000 - sleep_time)
+        print("TH_FUNC: Loop ended")
+
+        # ===================================================================================
+        # Handle inter thread message
+        # Sender thread ID, message type (string or integer) and message itself are available
+        # ===================================================================================
+        typ, sender, msg = _thread.getmsg()
+        if msg:
+            # -------------------------------------
+            # message received from 'sender' thread
+            # -------------------------------------
+
+            # Reply to sender, we can analyze the message first
+            _thread.sendmsg(sender, "[%s] Hi %s, received your message." % (_thread.getSelfName(), _thread.getThreadName(sender)))
+
+            # We can inform the main MicroPython thread (REPL) about received message
+            _thread.sendmsg(_thread.getReplID(), "[%s] Received message from '%s'\n'%s'" % (_thread.getSelfName(), _thread.getThreadName(sender), msg))

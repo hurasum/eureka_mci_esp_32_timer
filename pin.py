@@ -26,8 +26,21 @@ class PIN:
     IRQ_ANYEDGE = "IRQ_ANYEDGE"
     IRQ_LOLEVEL = "IRQ_LOLEVEL"
     IRQ_HILEVEL = "IRQ_HILEVEL"
+    PULL_UP = "PULL_UP"
+    PULL_DOWN = "PULL_DOWN"
+    PULL_UPDOWN = "PULL_UPDOWN"
+    PULL_FLOAT = "PULL_FLOAT"
 
-    def init(self, mode, pull, value, handler, trigger, debounce=0, acttime=0):
+    def init(
+        self,
+        mode: Optional = None,
+        pull: Optional = None,
+        value: Optional = None,
+        handler: Optional = None,
+        trigger: Optional = None,
+        debounce=0,
+        acttime=0
+    ):
         """
         Change the pin configuration and options after the pin instance object was created.
 

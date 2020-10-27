@@ -31,7 +31,10 @@ def parseTextFile(path, filter_word, in_class):
     file_str = ""
     for idx, line in enumerate(dtxt.readlines()):
         if line.startswith(f"{filter_word}.") and idx != 0:
-            file_str += parseFunction(parse_function, filter_word, in_class)
+            try:
+                file_str += parseFunction(parse_function, filter_word, in_class)
+            except TypeError:
+                pass
             parse_function = []
         parse_function.append(line)
     return file_str
@@ -203,6 +206,19 @@ def ds():
     dpy.write(file_str)
     dpy.close()
 
+def th():
+    dpy = open(PATH.format("thread.py"), "w")
+    dpy.write("\"\"\"\nThread typing class\n\"\"\"\n")
+    dpy.write("\n")
+    dpy.write("\n")
+    dpy.write("class Thread:\n")
+
+    dtxt = PATH.format("thread.txt")
+    file_str = parseTextFile(dtxt, "_thread", True)
+    dpy.write(file_str)
+    dpy.close()
+
+# th()
 # ds()
 # neopixel()
 # adc()
