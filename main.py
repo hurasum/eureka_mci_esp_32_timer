@@ -28,10 +28,11 @@ class CoffeeGrinder:
 
     def __init__(self):
         """Init"""
+        machine.WDT(True)
         self.tft = self.initDisplay()
         self.tft.clear()
         self.__initText()
-        self.encoder_state_machine = RotaryIRQ(13, 12, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
+        self.encoder_state_machine = RotaryIRQ(13, 12, min_val=0, max_val=2, reverse=True, range_mode=Rotary.RANGE_WRAP)
         self.encoder_grinder_time = None
         self.run = True
         self.update_display = True
@@ -111,10 +112,8 @@ class CoffeeGrinder:
             color = 0xFF0000
         text_s = "Seconds: {}\r".format(round(self.print_s, 2))
         qty = round(self.print_s * self.COFFEE_PER_SECOND, 1)
-        # x, y = math.modf(qty)
         text_g = "QTY: {} g\r".format(qty)
         if qty < 10:
-            # qty = "0{}".format(qty)
             text_g = "QTY:   {} g\r".format(qty)
         if self.state == 2:
             self.tft.textClear(67, 200, text_s)
@@ -168,13 +167,17 @@ class CoffeeGrinder:
         else:
             text = "Grind!"
             self.__textWrapper(67, 200, text)
-            test = 0
+            count = 0.2
+            time.sleep(0.2)
             while not self.pin_start.value():
                 time.sleep(0.1)
-                test += 0.1
-                text_g = "QTY: {} g".format(round(test * self.COFFEE_PER_SECOND, 1))
+                count += 0.1
+                qty = round(count * self.COFFEE_PER_SECOND, 1)
+                text_g = "QTY: {} g".format(qty)
+                if qty < 10:
+                    text_g = "QTY:   {} g\r".format(qty)
                 self.__textWrapper(67, 225, text_g)
-            self.tft.textClear(67, 200, text)
+            self.__textWrapper(67, 200, "\r             ")
         self.pin_out.value(False)
         self.update_display = True
         self.pin_start.init(trigger=machine.Pin.IRQ_RISING)
@@ -247,7 +250,7 @@ class CoffeeGrinder:
 
         shot_state_th = _thread.start_new_thread("Shot_state", self.__shotState, ())
         while True:
-            _thread.notify(shot_state_th, 1)
+            # _thread.notify(shot_state_th, 1)
             if self.state == 0 and self.run:
                 self.__stateSingeleShot()
             elif self.state == 1 and self.run:
@@ -259,14 +262,12 @@ class CoffeeGrinder:
             if self.update_display:
                 self.__showCoffeData()
                 self.update_display = False
-            time.sleep(0.05)
-
+            time.sleep(0.1)
 
 
 if __name__ == '__main__':
     s = CoffeeGrinder()
     time.sleep(1)
     s.runProgram()
-
 
 

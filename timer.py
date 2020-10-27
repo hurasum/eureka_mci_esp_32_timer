@@ -36,7 +36,32 @@ Warnng:
     The number of events and executed callbacks can be checked using tm.events() method.
 """
 
+from typing import Optional
+
+
 class TM:
+    ONE_SHOT = "ONE_SHOT"
+    PERIODIC = "PERIODIC"
+    CHRONO = "CHRONO"
+    EXTBASE = "EXTBASE"
+
+    def init(self, period: Optional = None, mode: Optional = None, callback: Optional = None, dbgpin: Optional = None):
+        """Argument 	Description
+        period 	Default: 10 ms
+        Timer period in ms, only used for PERIODIC and ONE_SHOT timers
+        mode 	Default: PERIODIC
+        Timer mode of operation
+        callback 	Default: None
+        The Python callback function to be executed on timer event
+        dbgpin 	Default: -1 (not used)
+        GPIO pin to be used as debug output.
+        If used, the gpio level will toggle on each timer event.
+
+        All arguments must be given as kw arguments (period=1000, mode=....)
+        The timer of the type CHRONO is not started after timer.init().
+        """
+        pass
+
     def deinit(self):
         """
         Deinitialize the timer, free the hardware timer resources.
