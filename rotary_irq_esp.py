@@ -39,10 +39,12 @@ class RotaryIRQ(Rotary):
         self._enable_dt_irq(self._process_rotary_pins)
 
     def _enable_clk_irq(self, callback=None):
-        self._pin_clk.init(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=callback)
+        # self._pin_clk.init(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=callback)
+        self._pin_clk.init(trigger=Pin.IRQ_ANYEDGE, handler=callback)
 
     def _enable_dt_irq(self, callback=None):
-        self._pin_dt.init(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=callback)
+        # self._pin_dt.init(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=callback)
+        self._pin_dt.init(trigger=Pin.IRQ_ANYEDGE, handler=callback)
 
     def _disable_clk_irq(self):
         self._pin_clk.init(handler=None)

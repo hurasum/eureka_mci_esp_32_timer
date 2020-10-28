@@ -37,6 +37,7 @@ class CoffeeGrinder:
         self.run = True
         self.update_display = True
         self.print_s = 0.0
+        self.encoder_value = 0
         self.state = 0
         self.state_old = 0
         self.edit_state = False
@@ -48,17 +49,18 @@ class CoffeeGrinder:
         self.pin_start = machine.Pin(
             36,
             mode=machine.Pin.IN,
+            pull=machine.Pin.PULL_DOWN,
             handler=self.__startGrinding,
-            trigger=machine.Pin.IRQ_RISING,
+            trigger=machine.Pin.IRQ_FALLING,
             acttime=0,
             debounce=500000
         )
-        self.pin_sec = machine.Pin(
+        self.pin_menu = machine.Pin(
             2,
             mode=machine.Pin.IN,
             pull=machine.Pin.PULL_DOWN,
             handler=self.switchState,
-            trigger=machine.Pin.IRQ_RISING,
+            trigger=machine.Pin.IRQ_FALLING,
             acttime=0,
             debounce=500000
         )
@@ -170,17 +172,17 @@ class CoffeeGrinder:
             count = 0.2
             time.sleep(0.2)
             while not self.pin_start.value():
-                time.sleep(0.1)
-                count += 0.1
                 qty = round(count * self.COFFEE_PER_SECOND, 1)
                 text_g = "QTY: {} g".format(qty)
                 if qty < 10:
                     text_g = "QTY:   {} g\r".format(qty)
                 self.__textWrapper(67, 225, text_g)
+                count += 0.1
+                time.sleep(0.1)
             self.__textWrapper(67, 200, "\r             ")
         self.pin_out.value(False)
         self.update_display = True
-        self.pin_start.init(trigger=machine.Pin.IRQ_RISING)
+        self.pin_start.init(trigger=machine.Pin.IRQ_FALLING)
 
     def __setCoffeGrindTime(self, pin):
         """Interrupt routine for set timer"""
@@ -195,6 +197,8 @@ class CoffeeGrinder:
             machine.nvs_setint("double_sec", int(self.seconds))
 
     def switchState(self, pin):
+        """Switch state on button press"""
+        self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
         self.update_display = True
         if self.state == 2:
             self.edit_state = False
@@ -214,26 +218,34 @@ class CoffeeGrinder:
             self.encoder_state_machine.set(value=value, min_val=1, max_val=99, range_mode=Rotary.RANGE_WRAP)
         else:
             self.encoder_state_machine.set(value=self.state_old, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
+        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
+
+    def __getEncoderValue(self):
+        """Thread for fast polling encoder value"""
+        while True:
+            ntf = _thread.wait(0)
+            if ntf == _thread.EXIT:
+                # Terminate the thread
+                return
+            self.encoder_value = self.encoder_state_machine.value()
+            time.sleep(0.001)
 
     def __shotState(self):
-        """Interrupt routine for States"""
-        self.state_old = self.encoder_state_machine.value()
+        """Thread for checking states"""
+        self.state_old = self.encoder_value
         while True:
-            ntf = _thread.wait(10)
+            ntf = _thread.wait(50)
             if ntf == _thread.EXIT:
                 # Terminate the thread
                 return
             if not self.edit_state:
-                self.state = self.encoder_state_machine.value()
+                self.state = self.encoder_value
                 if self.state_old != self.state:
                     self.run = True
                     self.state_old = self.state
             else:
-                self.seconds = self.encoder_state_machine.value()
-            if ntf == 1:
-                print('s =', self.seconds)
-                print('st =', self.state)
-                print('so =', self.state_old)
+                self.seconds = self.encoder_value
+            print('c =', self.encoder_value)
 
     def runProgram(self):
         """Run Main Program"""
@@ -248,9 +260,9 @@ class CoffeeGrinder:
 
         self.tft.set_fg(0x000000)
 
-        shot_state_th = _thread.start_new_thread("Shot_state", self.__shotState, ())
+        self.shot_state_th = _thread.start_new_thread("Shot_state", self.__shotState, ())
+        _thread.start_new_thread("t", self.__getEncoderValue, ())
         while True:
-            # _thread.notify(shot_state_th, 1)
             if self.state == 0 and self.run:
                 self.__stateSingeleShot()
             elif self.state == 1 and self.run:
@@ -269,5 +281,4 @@ if __name__ == '__main__':
     s = CoffeeGrinder()
     time.sleep(1)
     s.runProgram()
-
 
