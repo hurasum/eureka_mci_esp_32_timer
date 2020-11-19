@@ -26,7 +26,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../SW_TEST" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -97,11 +97,11 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="691" y="355" key="FileChooserDialogImpl" timestamp="1603779386858">
+    <state x="691" y="355" key="FileChooserDialogImpl" timestamp="1605512345670">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
     <state x="691" y="355" key="FileChooserDialogImpl/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603779386858" />
-    <state x="691" y="355" key="FileChooserDialogImpl/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1603086946035" />
+    <state x="691" y="355" key="FileChooserDialogImpl/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1605512345670" />
     <state x="441" y="15" key="FileDocumentManager.FileCacheConflict" timestamp="1603197438856">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
@@ -150,6 +150,10 @@
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
     <state width="548" height="446" key="SwitcherDM/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603789318116" />
+    <state x="557" y="215" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1605694304345">
+      <screen x="0" y="0" width="1822" height="1200" />
+    </state>
+    <state x="557" y="215" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1605694304345" />
     <state x="574" y="265" width="672" height="678" key="search.everywhere.popup" timestamp="1603659457096">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
@@ -163,6 +167,11 @@
           <url>file://$PROJECT_DIR$/functions_txt/create_typing.py</url>
           <line>36</line>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/machine.py</url>
+          <line>85</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
