@@ -24,14 +24,13 @@ class Cup:
 
 class CoffeeGrinder:
     """CoffeeGrinder Class"""
-    COFFEE_PER_SECOND = 1.8125
+    CPS_DEFAULT = 167
 
     def __init__(self):
         """Init"""
         machine.WDT(True)
         self.tft = self.initDisplay()
         self.tft.clear()
-        self.__initText()
         self.encoder_state_machine = RotaryIRQ(25, 26, min_val=0, max_val=2, reverse=True, range_mode=Rotary.RANGE_WRAP)
         self.encoder_grinder_time = None
         self.run = True
@@ -44,22 +43,23 @@ class CoffeeGrinder:
         self.cup = Cup()
         self.single_sec = machine.nvs_getint("single_sec")
         self.double_sec = machine.nvs_getint("double_sec")
+        self.cps = machine.nvs_getint("cps")
         self.seconds = 0.1
-
+        self.edit_cps = False
         self.pin_start = machine.Pin(
             33,
             mode=machine.Pin.IN,
             pull=machine.Pin.PULL_DOWN,
             handler=self.__startGrinding,
-            trigger=machine.Pin.IRQ_FALLING,
-            acttime=100,
+            trigger=machine.Pin.IRQ_HILEVEL,
+            acttime=0,
             debounce=500000
         )
         self.pin_menu = machine.Pin(
             27,
             mode=machine.Pin.IN,
             pull=machine.Pin.PULL_DOWN,
-            handler=self.switchState,
+            handler=self.setCPS,
             trigger=machine.Pin.IRQ_FALLING,
             acttime=0,
             debounce=500000
@@ -98,6 +98,7 @@ class CoffeeGrinder:
         self.__textWrapper(67, 110, text)
         text = "Coffegrinder"
         self.__textWrapper(67, 130, text)
+        time.sleep(4)
 
     def __textCenterOffset(self, text):
         """Center offset"""
@@ -113,14 +114,15 @@ class CoffeeGrinder:
         color = 0xFFFFFF
         if self.edit_state:
             color = 0xFF0000
-        text_s = "Seconds: {}\r".format(round(self.print_s, 2))
-        qty = round(self.print_s * self.COFFEE_PER_SECOND, 1)
+        text_s = "Timer: {} \r".format(round(self.print_s, 2))
+        if self.print_s < 10:
+            text_s = "Timer:   {} \r".format(round(self.print_s, 2))
+        qty = round(self.print_s * self.cps, 1)
         text_g = "QTY: {} g\r".format(qty)
         if qty < 10:
             text_g = "QTY:   {} g\r".format(qty)
-        if self.state == 2:
-            self.tft.textClear(67, 200, text_s)
-        else:
+        self.tft.textClear(67, 200, text_s, color)
+        if self.state != 2:
             self.__textWrapper(67, 200, text_s, color)
             self.__textWrapper(67, 225, text_g, color)
 
@@ -131,7 +133,7 @@ class CoffeeGrinder:
             mode=machine.Pin.IN,
             pull=machine.Pin.PULL_DOWN,
             handler=self.__startGrinding,
-            trigger=machine.Pin.IRQ_FALLING,
+            trigger=machine.Pin.IRQ_HILEVEL,
             acttime=0,
             debounce=500000
         )
@@ -150,7 +152,7 @@ class CoffeeGrinder:
             mode=machine.Pin.IN,
             pull=machine.Pin.PULL_DOWN,
             handler=self.__startGrinding,
-            trigger=machine.Pin.IRQ_FALLING,
+            trigger=machine.Pin.IRQ_HILEVEL,
             acttime=0,
             debounce=500000
         )
@@ -187,8 +189,12 @@ class CoffeeGrinder:
             return
         self.pin_start.init(trigger=machine.Pin.IRQ_DISABLE)
         self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
+        time.sleep(0.1)
+        if not self.pin_start.value():
+            self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
+            self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
+            return
         self.pin_out.value(True)
-        print(self.pin_out.value())
         if self.state != 2:
             sleep = self.print_s
             while sleep > 0:
@@ -202,7 +208,7 @@ class CoffeeGrinder:
             count = 0.2
             time.sleep(0.2)
             while self.pin_start.value():
-                qty = round(count * self.COFFEE_PER_SECOND, 1)
+                qty = round(count * self.cps, 1)
                 text_g = "QTY: {} g".format(qty)
                 if qty < 10:
                     text_g = "QTY:   {} g\r".format(qty)
@@ -215,10 +221,7 @@ class CoffeeGrinder:
         self.update_display = True
         time.sleep(1)
         self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
-        if self.state != 2:
-            self.pin_start.init(trigger=machine.Pin.IRQ_FALLING)
-        else:
-            self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
+        self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
 
     def __setCoffeGrindTime(self, pin):
         """Interrupt routine for set timer"""
@@ -252,10 +255,34 @@ class CoffeeGrinder:
             elif self.state_old == 1:
                 value = self.double_sec
             value *= 10
-            self.encoder_state_machine.set(value=value, min_val=1, max_val=99, range_mode=Rotary.RANGE_WRAP)
+            self.encoder_state_machine.set(value=value, min_val=1, max_val=120, range_mode=Rotary.RANGE_WRAP)
         else:
             self.encoder_state_machine.set(value=self.state_old, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
         self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
+
+    def setCPS(self, pin):
+        self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
+        self.edit_cps = True
+
+    def editCPS(self):
+        self.encoder_state_machine.set(value=self.cps*10, min_val=100, max_val=200, range_mode=Rotary.RANGE_WRAP)
+        self.tft.clear()
+        text = "Set CPS"
+        self.__textWrapper(67, 110, text)
+        time.sleep(1.0)
+        while True:
+            self.cps = self.encoder_value / 100
+            text = "CPS:   {}\r".format(round(self.cps, 2))
+            self.__textWrapper(67, 130, text, 0xec7d15)
+            if not self.pin_menu.value():
+                print(self.pin_menu.value())
+                break
+            time.sleep(0.1)
+        machine.nvs_setint("cps", int(self.cps * 100))
+        self.encoder_state_machine.set(value=0, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
+        self.tft.clear()
+        self.edit_cps = False
+        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING, handler=self.switchState)
 
     def __getEncoderValue(self):
         """Thread for fast polling encoder value"""
@@ -294,10 +321,21 @@ class CoffeeGrinder:
             self.double_sec = 1
         self.double_sec /= 10
 
+        if not self.cps:
+            self.cps = self.CPS_DEFAULT
+        self.cps /= 100
+
         self.tft.set_fg(0x000000)
 
         self.shot_state_th = _thread.start_new_thread("Shot_state", self.__shotState, ())
         _thread.start_new_thread("t", self.__getEncoderValue, ())
+        self.__initText()
+        if self.edit_cps:
+            self.editCPS()
+        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING, handler=self.switchState)
+        # self.__stateSingeleShot()
+        self.state = 0
+        self.run = True
         while True:
             if self.state == 0 and self.run:
                 self.__stateSingeleShot()
@@ -315,7 +353,6 @@ class CoffeeGrinder:
 
 if __name__ == '__main__':
     s = CoffeeGrinder()
-    time.sleep(1)
     s.runProgram()
 
 

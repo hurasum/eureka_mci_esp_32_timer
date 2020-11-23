@@ -32,6 +32,10 @@
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\repository\esp32_python" />
     </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\repository\esp32_python\workSpace\user_lib" />
+      <recent name="C:\repository\esp32_python" />
+    </key>
   </component>
   <component name="RunManager" selected="Python.create_typing">
     <configuration name="create_typing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -67,7 +71,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="SCRIPT_NAME" value="C:\repository\esp32_python\main.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -79,7 +83,6 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.create_typing" />
-        <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
   </component>
@@ -150,6 +153,10 @@
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
     <state width="548" height="446" key="SwitcherDM/-1920.0.1822.1080/0.0.1822.1200@0.0.1822.1200" timestamp="1603789318116" />
+    <state x="92" y="92" width="1638" height="1016" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1605780120065">
+      <screen x="0" y="0" width="1822" height="1200" />
+    </state>
+    <state x="92" y="92" width="1638" height="1016" key="com.intellij.history.integration.ui.views.FileHistoryDialog/1920.0.1822.1200/0.0.1822.1200/-1920.0.1920.1200@0.0.1822.1200" timestamp="1605780120065" />
     <state x="557" y="215" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1605694304345">
       <screen x="0" y="0" width="1822" height="1200" />
     </state>
