@@ -4,6 +4,7 @@ import _thread
 import display
 import time
 import machine
+import timer
 from rotary_irq_esp import RotaryIRQ
 from rotary import Rotary
 
@@ -114,10 +115,10 @@ class CoffeeGrinder:
         color = 0xFFFFFF
         if self.edit_state:
             color = 0xFF0000
-        text_s = "Timer: {} \r".format(round(self.print_s, 2))
+        text_s = "Timer: {} \r".format(round(self.print_s, 3))
         if self.print_s < 10:
-            text_s = "Timer:   {} \r".format(round(self.print_s, 2))
-        qty = round(self.print_s * self.cps, 1)
+            text_s = "Timer:   {} \r".format(round(self.print_s, 3))
+        qty = round(self.print_s * self.cps, 2)
         text_g = "QTY: {} g\r".format(qty)
         if qty < 10:
             text_g = "QTY:   {} g\r".format(qty)
@@ -194,26 +195,41 @@ class CoffeeGrinder:
             self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
             self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
             return
+        period = self.print_s*1000
+        hw_timer = timer.TM()
         self.pin_out.value(True)
         if self.state != 2:
-            sleep = self.print_s
-            while sleep > 0:
-                text = "Seconds: {}".format(round(sleep, 2))
-                self.__textWrapper(67, 200, text,  0xec7d15)
-                sleep -= 0.1
+            hw_timer.init(period=period, mode=timer.TM.ONE_SHOT)
+            while hw_timer.isrunning():
+                sleep_count = period - (hw_timer.value() / 1000)
+                text = "Seconds: {}".format(round(sleep_count, 2))
+                self.__textWrapper(67, 200, text, 0xec7d15)
                 time.sleep(0.1)
+            # start_time = time.time()
+            # end_time = 0
+            # count = 0
+            # while True:
+            #     sleep_count = period - end_time
+            #     text = "Seconds: {}".format(round(sleep_count, 2))
+            #     if count % 10 == 0:
+            #         self.__textWrapper(67, 200, text, 0xec7d15)
+            #     time.sleep(0.01)
+            #     count += 1
+            #     end_time = time.time() - start_time
+            #     if end_time < period:
+            #         break
         else:
             text = "Grind!"
             self.__textWrapper(67, 200, text)
-            count = 0.2
-            time.sleep(0.2)
+            hw_timer.init(period=period, mode=timer.TM.CHRONO)
+            time.sleep(0.1)
             while self.pin_start.value():
+                count = hw_timer.value() * 100000
                 qty = round(count * self.cps, 1)
                 text_g = "QTY: {} g".format(qty)
                 if qty < 10:
                     text_g = "QTY:   {} g\r".format(qty)
                 self.__textWrapper(67, 225, text_g)
-                count += 0.1
                 time.sleep(0.1)
             self.__textWrapper(67, 200, "\r             ")
         self.pin_out.value(False)
@@ -227,11 +243,11 @@ class CoffeeGrinder:
         """Interrupt routine for set timer"""
         self.update_display = True
         if self.state == 0:
-            self.single_sec = self.seconds / 10
+            self.single_sec = self.seconds / 20
             self.print_s = self.single_sec
             machine.nvs_setint("single_sec", int(self.seconds))
         elif self.state == 1:
-            self.double_sec = self.seconds / 10
+            self.double_sec = self.seconds / 20
             self.print_s = self.double_sec
             machine.nvs_setint("double_sec", int(self.seconds))
 
@@ -254,8 +270,8 @@ class CoffeeGrinder:
                 value = self.single_sec
             elif self.state_old == 1:
                 value = self.double_sec
-            value *= 10
-            self.encoder_state_machine.set(value=value, min_val=1, max_val=120, range_mode=Rotary.RANGE_WRAP)
+            value *= 20
+            self.encoder_state_machine.set(value=value, min_val=1, max_val=360, range_mode=Rotary.RANGE_WRAP)
         else:
             self.encoder_state_machine.set(value=self.state_old, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
         self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
@@ -265,7 +281,7 @@ class CoffeeGrinder:
         self.edit_cps = True
 
     def editCPS(self):
-        self.encoder_state_machine.set(value=self.cps*10, min_val=100, max_val=200, range_mode=Rotary.RANGE_WRAP)
+        self.encoder_state_machine.set(value=self.cps*100, min_val=100, max_val=200, range_mode=Rotary.RANGE_WRAP)
         self.tft.clear()
         text = "Set CPS"
         self.__textWrapper(67, 110, text)
@@ -315,11 +331,11 @@ class CoffeeGrinder:
 
         if not self.single_sec:
             self.single_sec = 1
-        self.single_sec /= 10
+        self.single_sec /= 20
 
         if not self.double_sec:
             self.double_sec = 1
-        self.double_sec /= 10
+        self.double_sec /= 20
 
         if not self.cps:
             self.cps = self.CPS_DEFAULT
