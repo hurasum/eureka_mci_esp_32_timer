@@ -1,57 +1,270 @@
+"""
+New Version :)
+"""
 
 
 import _thread
 import display
 import time
 import machine
-import timer
 from rotary_irq_esp import RotaryIRQ
 from rotary import Rotary
 
 
-class Cup:
-    """Class for Displayinig cups"""
-    @staticmethod
-    def oneCup(tft, x, y):
-        """draw single cup"""
-        tft.rect(x, y, 35, 35, 0xFFFFFF, fillcolor=0xFFFFFF)
-        tft.arc(x-2, y+15, 12, 2, 180, 360, 0xFFFFFF)
+class RotaryEncoder:
+    """Rotary Encoder config"""
+    def __init__(self):
+        self.encoder_state_machine = RotaryIRQ(25, 26, min_val=0, max_val=2, reverse=True, range_mode=Rotary.RANGE_WRAP)
+        self.value = 1
+        _thread.start_new_thread("getEncoderValue", self.__getEncoderValue, ())
 
-    @staticmethod
-    def endLess(tft, x, y, r):
+    def setTime(self, value):
+        """Set Encoder to time config"""
+        self.encoder_state_machine.set(value=value, min_val=1, max_val=360, range_mode=Rotary.RANGE_WRAP)
+
+    def setState(self, value):
+        """Set Encoder to state config"""
+        self.encoder_state_machine.set(value=value, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
+
+    def setCPS(self, value):
+        """Set Encoder to CPS config"""
+        self.encoder_state_machine.set(value=value, min_val=100, max_val=200, range_mode=Rotary.RANGE_WRAP)
+
+    def __getEncoderValue(self):
+        """Thread for fast polling encoder value"""
+        while True:
+            ntf = _thread.wait(0)
+            if ntf == _thread.EXIT:
+                # Terminate the thread
+                return
+            self.value = int(self.encoder_state_machine.value())
+            time.sleep(0.001)
+
+
+class SingleState:
+    """Single State class"""
+    def __init__(self):
+        self.STATE = 0
+        self.TEXT = "Single Shot!"
+        self.VALUE = 1
+
+    @property
+    def SECONDS(self):
+        return self.VALUE / 20
+
+
+class DoubleState:
+    """Double State class"""
+    def __init__(self):
+        self.STATE = 1
+        self.TEXT = "Double Shot!"
+        self.VALUE = 1
+
+    @property
+    def SECONDS(self):
+        return self.VALUE / 20
+
+
+class EndlessState:
+    """Endless State class"""
+    def __init__(self):
+        self.STATE = 2
+        self.TEXT = "Endless!"
+
+
+class States:
+    """States class"""
+    def __init__(self, machine_main, display_main, pin_menu, encoder):
+        self.single = SingleState()
+        self.double = DoubleState()
+        self.endless = EndlessState()
+        #
+        self.encoder_state_machine = encoder
+        self.uc = machine_main
+        self.display = display_main
+        self.pin_menu = pin_menu
+        self.state = self.double.STATE
+        self.edit_state = False
+        self.state_old = 0
+        self.run = True
+        self.edit_cps = False
+        self.cps = 2
+
+    def startCheckStatesThread(self):
+        """Start thread"""
+        _thread.start_new_thread("__checkStates", self.__checkStates, ())
+
+    def __checkStates(self):
+        """Thread for checking states"""
+        self.state_old = self.encoder_state_machine.value
+        while True:
+            ntf = _thread.wait(50)
+            if ntf == _thread.EXIT:
+                # Terminate the thread
+                return
+            value = self.encoder_state_machine.value
+            if self.edit_state:
+                if self.state == self.single.STATE:
+                    self.single.VALUE = value
+                elif self.state == self.double.STATE:
+                    self.double.VALUE = value
+            else:
+                self.state = value
+                if self.state_old != self.state:
+                    self.run = True
+                    self.state_old = self.state
+
+    def editCPS(self):
+        """Edit CPS"""
+        self.encoder_state_machine.setCPS(self.cps*100)
+        self.display.lib.clear()
+        self.display.textWrapper(67, 110, "Set CPS")
+        time.sleep(1.0)
+        while True:
+            self.cps = self.encoder_state_machine.value / 100
+            text = "CPS:   {:.2f}\r".format(round(self.cps, 3))
+            self.display.textWrapper(67, 130, text, 0xec7d15)
+            if not self.pin_menu.value():
+                break
+            time.sleep(0.1)
+        self.encoder_state_machine.setState(value=self.double.STATE)
+        self.edit_cps = False
+        self.display.lib.clear()
+
+    def runState(self, state, function_cup):
+        """run state function"""
+        self.display.update = True
+        self.display.lib.clear()
+        function_cup()
+        self.display.textWrapper(67, 30, state.TEXT)
+        self.run = False
+
+
+class DisplayFunctions:
+    """Display  functions"""
+    def __init__(self):
+        self.lib = display.TFT()
+        self.initDisplay()
+        self.update = True
+
+    def initDisplay(self):
+        """initialize the display"""
+        self.lib.init(
+            self.lib.ST7789,
+            rst_pin=23,
+            backl_pin=4,
+            miso=0,
+            mosi=19,
+            clk=18,
+            cs=5,
+            dc=16,
+            width=235,
+            height=340,
+            backl_on=1
+        )
+
+        self.lib.font(self.lib.FONT_DejaVu18)
+
+        # invert colors
+        self.lib.tft_writecmd(0x21)
+
+        # set orientation (optional)
+        self.lib.orient(self.lib.PORTRAIT_FLIP)
+
+        # set window size
+        self.lib.setwin(52, 40, 188, 280)
+        # x, y -> x2, y2
+        self.lib.rect(0, 0, 135, 240, 0xFFFFFF)
+
+    def doubleCup(self):
+        """draw 2 cups"""
+        self.__cup(27, 90)
+        self.__cup(87, 90)
+
+    def singleCup(self):
+        """draw single cup"""
+        self.__cup(57, 90)
+
+    def endLess(self, x=68, y=110, r=20):
         """draw endles sign"""
-        tft.circle(x-20, y, r, 0xFFFFFF)
-        tft.circle(x+20, y, r, 0xFFFFFF)
+        self.lib.circle(x-20, y, r, 0xFFFFFF)
+        self.lib.circle(x+20, y, r, 0xFFFFFF)
+
+    def __cup(self, x, y):
+        """draw single cup"""
+        self.lib.rect(x, y, 35, 35, 0xFFFFFF, fillcolor=0xFFFFFF)
+        self.lib.arc(x-2, y+15, 12, 2, 180, 360, 0xFFFFFF)
+
+    def textWrapper(self, x, y, text, color=0xFFFFFF):
+        """Function to warp text"""
+        self.lib.text(x - self.__textCenterOffset(text), y - self.__textFontSizeOffset(), text, color=color)
+
+    def initText(self):
+        """Init Text"""
+        self.lib.set_fg(0x000000)  # background color
+        text = "Initialize"
+        self.textWrapper(67, 110, text)
+        text = "Coffegrinder"
+        self.textWrapper(67, 130, text)
+        time.sleep(4)
+
+    def __textCenterOffset(self, text):
+        """Center offset"""
+        return int(self.lib.textWidth(text) / 2)
+
+    def __textFontSizeOffset(self):
+        """Fontsize offset"""
+        return int(self.lib.fontSize()[1] / 2)
+
 
 class CoffeeGrinder:
-    """CoffeeGrinder Class"""
-    CPS_DEFAULT = 167
+    """Main Program"""
+    SINGLE_SEC = "single_sec"
+    DOUBLE_SEC = "double_sec"
+    CPS = "cps"
+    STATE = "state"
 
     def __init__(self):
-        """Init"""
-        machine.WDT(True)
-        self.tft = self.initDisplay()
-        self.tft.clear()
-        self.encoder_state_machine = RotaryIRQ(25, 26, min_val=0, max_val=2, reverse=True, range_mode=Rotary.RANGE_WRAP)
-        self.encoder_grinder_time = None
-        self.run = True
-        self.update_display = True
-        self.print_s = 0.0
-        self.encoder_value = 0
-        self.state = 0
-        self.state_old = 0
-        self.edit_state = False
-        self.cup = Cup()
-        self.single_sec = machine.nvs_getint("single_sec")
-        self.double_sec = machine.nvs_getint("double_sec")
-        self.cps = machine.nvs_getint("cps")
-        self.seconds = 0.1
-        self.edit_cps = False
+        self.__setPins()
+        self.encoder = RotaryEncoder()
+        self.display = DisplayFunctions()
+        self.states = States(machine, self.display, self.pin_menu, self.encoder)
+        self.states.startCheckStatesThread()
+        # self.__getShotTimes()
+
+    def __getShotTimes(self):
+        """Get shot times from memory"""
+        single_sec = machine.nvs_getint(self.SINGLE_SEC)
+        double_sec = machine.nvs_getint(self.DOUBLE_SEC)
+        cps = machine.nvs_getint(self.CPS)
+        state = machine.nvs_getint(self.STATE)
+        if state:
+            self.states.state = state
+        if single_sec:
+            self.states.single.VALUE = single_sec
+        if double_sec:
+            self.states.double.VALUE = double_sec
+        if cps:
+            self.states.cps = cps / 100
+
+    def setCoffeGrindTime(self):
+        """Update Grind Time"""
+        self.display.update = True
+        if self.states.state == self.states.single.STATE:
+            single_sec = self.states.single.VALUE
+            machine.nvs_setint(self.SINGLE_SEC, int(single_sec))
+        elif self.states.state == self.states.double.STATE:
+            double_sec = self.states.double.VALUE
+            machine.nvs_setint(self.DOUBLE_SEC, int(double_sec))
+        machine.nvs_setint(self.STATE, int(self.states.state))
+
+    def __setPins(self):
+        """Set uc pins"""
         self.pin_start = machine.Pin(
             33,
             mode=machine.Pin.IN,
             pull=machine.Pin.PULL_DOWN,
-            handler=self.__startGrinding,
+            handler=self.startGrinding,
             trigger=machine.Pin.IRQ_HILEVEL,
             acttime=0,
             debounce=500000
@@ -68,125 +281,54 @@ class CoffeeGrinder:
         self.pin_out = machine.Pin(32, mode=machine.Pin.INOUT)
         self.pin_out.value(False)
 
-    @staticmethod
-    def initDisplay():
-        """initialize the display"""
-        tft = display.TFT()
-        tft.init(tft.ST7789, rst_pin=23, backl_pin=4, miso=0, mosi=19, clk=18, cs=5, dc=16, width=235, height=340,
-                 backl_on=1)
+    def setCPS(self, pin):
+        """Interrupt CPS"""
+        self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
+        self.states.edit_cps = True
 
-        tft.font(tft.FONT_DejaVu18)
+    def setEdit(self, pin):
+        """Interrupt Edit"""
+        self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
+        time.sleep(0.1)
+        self.display.update = True
+        if self.states.state == self.states.endless.STATE:
+            self.edit_state = False
+        if self.states.edit_state:
+            self.states.edit_state = False
+            self.encoder.setState(self.states.state_old)
+        else:
+            self.states.edit_state = True
+            if self.states.state == self.states.single.STATE:
+                self.encoder.setTime(self.states.single.VALUE)
+            elif self.states.state == self.states.double.STATE:
+                self.encoder.setTime(self.states.double.VALUE)
+        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
 
-        # invert colors
-        tft.tft_writecmd(0x21)
-
-        # set orientation (optional)
-        tft.orient(tft.PORTRAIT_FLIP)
-
-        # set window size
-        tft.setwin(52, 40, 188, 280)
-        # x, y -> x2, y2
-        tft.rect(0, 0, 135, 240, 0xFFFFFF)
-        return tft
-
-    def __textWrapper(self, x, y, text, color=0xFFFFFF):
-        """Function to warp text"""
-        self.tft.text(x - self.__textCenterOffset(text), y - self.__textFontSizeOffset(), text, color=color)
-
-    def __initText(self):
-        """Init Text"""
-        text = "Initialize"
-        self.__textWrapper(67, 110, text)
-        text = "Coffegrinder"
-        self.__textWrapper(67, 130, text)
-        time.sleep(4)
-
-    def __textCenterOffset(self, text):
-        """Center offset"""
-        return int(self.tft.textWidth(text) / 2)
-
-    def __textFontSizeOffset(self):
-        """Fontsize offset"""
-        return int(self.tft.fontSize()[1] / 2)
-
-    def __showCoffeData(self):
+    def showCoffeData(self):
         """Show Display Data"""
-        self.update_display = True
         color = 0xFFFFFF
-        if self.edit_state:
+        if self.states.edit_state:
             color = 0xFF0000
-        text_s = "Timer: {} \r".format(round(self.print_s, 3))
-        if self.print_s < 10:
-            text_s = "Timer:   {} \r".format(round(self.print_s, 3))
-        qty = round(self.print_s * self.cps, 2)
-        text_g = "QTY: {} g\r".format(qty)
-        if qty < 10:
-            text_g = "QTY:   {} g\r".format(qty)
-        self.tft.textClear(67, 200, text_s, color)
-        if self.state != 2:
-            self.__textWrapper(67, 200, text_s, color)
-            self.__textWrapper(67, 225, text_g, color)
+        seconds = 0.1
+        if self.states.state == self.states.single.STATE:
+            seconds = self.states.single.SECONDS
+        elif self.states.state == self.states.double.STATE:
+            seconds = self.states.double.SECONDS
+        text = "Timer: {:.2f} \r".format(round(seconds, 3))
+        # if seconds < 10:
+        #     text = "Timer:   {} \r".format(round(seconds, 3))
+        qty = round(seconds * self.states.cps, 1)
+        text_g = "QTY: {:.2f} g\r".format(qty)
+        # if qty < 10:
+        #     text_g = "QTY:   {} g\r".format(qty)
+        self.display.lib.textClear(67, 200, text, color)
+        if self.states.state != self.states.endless.STATE:
+            self.display.textWrapper(67, 200, text, color)
+            self.display.textWrapper(67, 225, text_g, color)
 
-    def __stateSingeleShot(self):
-        """Single shot"""
-        self.pin_start = machine.Pin(
-            33,
-            mode=machine.Pin.IN,
-            pull=machine.Pin.PULL_DOWN,
-            handler=self.__startGrinding,
-            trigger=machine.Pin.IRQ_HILEVEL,
-            acttime=0,
-            debounce=500000
-        )
-        self.update_display = True
-        self.tft.clear()
-        self.cup.oneCup(self.tft, 57, 90)
-        text = "Single Shot!"
-        self.__textWrapper(67, 30, text)
-        self.print_s = self.single_sec
-        self.run = False
-
-    def __stateDoubleShot(self):
-        """Double Shot"""
-        self.pin_start = machine.Pin(
-            33,
-            mode=machine.Pin.IN,
-            pull=machine.Pin.PULL_DOWN,
-            handler=self.__startGrinding,
-            trigger=machine.Pin.IRQ_HILEVEL,
-            acttime=0,
-            debounce=500000
-        )
-        self.update_display = True
-        self.tft.clear()
-        self.cup.oneCup(self.tft, 27, 90)
-        self.cup.oneCup(self.tft, 87, 90)
-        text = "Double Shot!"
-        self.__textWrapper(67, 30, text)
-        self.print_s = self.double_sec
-        self.run = False
-
-    def __stateEndlessShot(self):
-        """Endless"""
-        self.pin_start = machine.Pin(
-            33,
-            mode=machine.Pin.IN,
-            pull=machine.Pin.PULL_DOWN,
-            handler=self.__startGrinding,
-            trigger=machine.Pin.IRQ_HILEVEL,
-            acttime=0,
-            debounce=500000
-        )
-        self.update_display = True
-        self.tft.clear()
-        self.cup.endLess(self.tft, 68, 110, 20)
-        text = "Endless!"
-        self.__textWrapper(67, 30, text)
-        self.run = False
-
-    def __startGrinding(self, pin):
+    def startGrinding(self, pin):
         """Interrupt routine for grinder start"""
-        if self.edit_state:
+        if self.states.edit_state:
             return
         self.pin_start.init(trigger=machine.Pin.IRQ_DISABLE)
         self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
@@ -195,181 +337,73 @@ class CoffeeGrinder:
             self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
             self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
             return
-        period = self.print_s*1000
-        hw_timer = timer.TM()
         self.pin_out.value(True)
-        if self.state != 2:
-            hw_timer.init(period=period, mode=timer.TM.ONE_SHOT)
-            while hw_timer.isrunning():
-                sleep_count = period - (hw_timer.value() / 1000)
-                text = "Seconds: {}".format(round(sleep_count, 2))
-                self.__textWrapper(67, 200, text, 0xec7d15)
-                time.sleep(0.1)
-            # start_time = time.time()
-            # end_time = 0
-            # count = 0
-            # while True:
-            #     sleep_count = period - end_time
-            #     text = "Seconds: {}".format(round(sleep_count, 2))
-            #     if count % 10 == 0:
-            #         self.__textWrapper(67, 200, text, 0xec7d15)
-            #     time.sleep(0.01)
-            #     count += 1
-            #     end_time = time.time() - start_time
-            #     if end_time < period:
-            #         break
+        if self.states.state == self.states.single.STATE:
+            self.__sleepTime(self.states.single.SECONDS)
+        elif self.states.state == self.states.double.STATE:
+            self.__sleepTime(self.states.double.SECONDS)
         else:
-            text = "Grind!"
-            self.__textWrapper(67, 200, text)
-            hw_timer.init(period=period, mode=timer.TM.CHRONO)
-            time.sleep(0.1)
+            self.display.textWrapper(67, 200, "Grind!")
+            count = 0.2
+            time.sleep(0.2)
             while self.pin_start.value():
-                count = hw_timer.value() * 100000
-                qty = round(count * self.cps, 1)
-                text_g = "QTY: {} g".format(qty)
-                if qty < 10:
-                    text_g = "QTY:   {} g\r".format(qty)
-                self.__textWrapper(67, 225, text_g)
-                time.sleep(0.1)
-            self.__textWrapper(67, 200, "\r             ")
+                qty = round(count * self.states.cps, 3)
+                text_g = "QTY: {:.2f} g".format(qty)
+                # if qty < 10:
+                #     text_g = "QTY:   {} g\r".format(qty)
+                self.display.textWrapper(67, 225, text_g)
+                count += 0.01
+                time.sleep(0.01)
+            self.display.textWrapper(67, 200, "\r             ")
         self.pin_out.value(False)
-        print(self.pin_out.value())
-        self.update_display = True
+        self.display.update = True
         time.sleep(1)
         self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
         self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
 
-    def __setCoffeGrindTime(self, pin):
-        """Interrupt routine for set timer"""
-        self.update_display = True
-        if self.state == 0:
-            self.single_sec = self.seconds / 20
-            self.print_s = self.single_sec
-            machine.nvs_setint("single_sec", int(self.seconds))
-        elif self.state == 1:
-            self.double_sec = self.seconds / 20
-            self.print_s = self.double_sec
-            machine.nvs_setint("double_sec", int(self.seconds))
-
-    def switchState(self, pin):
-        """Switch state on button press"""
-        self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
-        self.update_display = True
-        if self.state == 2:
-            self.edit_state = False
-            self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
-            return
-        if self.edit_state:
-            self.edit_state = False
-        elif not self.edit_state:
-            self.edit_state = True
-
-        if self.edit_state:
-            value = 0.1
-            if self.state_old == 0:
-                value = self.single_sec
-            elif self.state_old == 1:
-                value = self.double_sec
-            value *= 20
-            self.encoder_state_machine.set(value=value, min_val=1, max_val=360, range_mode=Rotary.RANGE_WRAP)
-        else:
-            self.encoder_state_machine.set(value=self.state_old, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
-        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
-
-    def setCPS(self, pin):
-        self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
-        self.edit_cps = True
-
-    def editCPS(self):
-        self.encoder_state_machine.set(value=self.cps*100, min_val=100, max_val=200, range_mode=Rotary.RANGE_WRAP)
-        self.tft.clear()
-        text = "Set CPS"
-        self.__textWrapper(67, 110, text)
-        time.sleep(1.0)
-        while True:
-            self.cps = self.encoder_value / 100
-            text = "CPS:   {}\r".format(round(self.cps, 2))
-            self.__textWrapper(67, 130, text, 0xec7d15)
-            if not self.pin_menu.value():
-                print(self.pin_menu.value())
-                break
-            time.sleep(0.1)
-        machine.nvs_setint("cps", int(self.cps * 100))
-        self.encoder_state_machine.set(value=0, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
-        self.tft.clear()
-        self.edit_cps = False
-        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING, handler=self.switchState)
-
-    def __getEncoderValue(self):
-        """Thread for fast polling encoder value"""
-        while True:
-            ntf = _thread.wait(0)
-            if ntf == _thread.EXIT:
-                # Terminate the thread
-                return
-            self.encoder_value = self.encoder_state_machine.value()
-            time.sleep(0.001)
-
-    def __shotState(self):
-        """Thread for checking states"""
-        self.state_old = self.encoder_value
-        while True:
-            ntf = _thread.wait(50)
-            if ntf == _thread.EXIT:
-                # Terminate the thread
-                return
-            if not self.edit_state:
-                self.state = self.encoder_value
-                if self.state_old != self.state:
-                    self.run = True
-                    self.state_old = self.state
-            else:
-                self.seconds = self.encoder_value
+    def __sleepTime(self, sleep):
+        """sleep counter"""
+        # start_time = time.time()
+        end_time = 0
+        while end_time < sleep:
+            text = "Seconds: {:.2f}".format(round(sleep, 3))
+            self.display.textWrapper(67, 200, text, 0xec7d15)
+            sleep -= 0.01
+            time.sleep(0.01)
+            # end_time = time.time() - start_time
 
     def runProgram(self):
         """Run Main Program"""
-
-        if not self.single_sec:
-            self.single_sec = 1
-        self.single_sec /= 20
-
-        if not self.double_sec:
-            self.double_sec = 1
-        self.double_sec /= 20
-
-        if not self.cps:
-            self.cps = self.CPS_DEFAULT
-        self.cps /= 100
-
-        self.tft.set_fg(0x000000)
-
-        self.shot_state_th = _thread.start_new_thread("Shot_state", self.__shotState, ())
-        _thread.start_new_thread("t", self.__getEncoderValue, ())
-        self.__initText()
-        if self.edit_cps:
-            self.editCPS()
-        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING, handler=self.switchState)
-        # self.__stateSingeleShot()
-        self.state = 0
-        self.run = True
+        self.display.initText()
+        if self.states.edit_cps:
+            self.states.editCPS()
+            machine.nvs_setint(self.CPS, int(self.states.cps * 100))
+        self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING, handler=self.setEdit)
+        self.states.state = self.states.double.STATE
+        self.states.run = True
+        self.states.edit_state = False
         while True:
-            if self.state == 0 and self.run:
-                self.__stateSingeleShot()
-            elif self.state == 1 and self.run:
-                self.__stateDoubleShot()
-            elif self.state == 2 and self.run:
-                self.__stateEndlessShot()
-            if self.edit_state:
-                self.__setCoffeGrindTime(1)
-            if self.update_display:
-                self.__showCoffeData()
-                self.update_display = False
+            if (self.states.state == self.states.single.STATE) and self.states.run:
+                self.states.runState(self.states.single, self.display.singleCup)
+            elif (self.states.state == self.states.double.STATE) and self.states.run:
+                self.states.runState(self.states.double, self.display.doubleCup)
+            elif (self.states.state == self.states.endless.STATE) and self.states.run:
+                self.states.runState(self.states.endless, self.display.endLess)
+            if self.states.edit_state:
+                self.setCoffeGrindTime()
+            if self.display.update:
+                self.showCoffeData()
+                self.display.update = False
             time.sleep(0.1)
+            print(self.states.state)
+            print(self.encoder.value)
+            print(self.states.single.SECONDS)
+            print(self.states.double.SECONDS)
+            print(self.states.single.VALUE)
+            print(self.states.double.VALUE)
+            print(self.states.edit_state)
 
 
 if __name__ == '__main__':
     s = CoffeeGrinder()
     s.runProgram()
-
-
-
