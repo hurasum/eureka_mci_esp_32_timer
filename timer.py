@@ -111,7 +111,7 @@ class TM:
         """
         pass
 
-    def reshot(self):
+    def reshoot(self):
         """
         Start the ONE_SHOT timer again.
         Only use for timer in ONE_SHOT mode.

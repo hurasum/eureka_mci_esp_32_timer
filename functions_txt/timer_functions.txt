@@ -29,7 +29,7 @@ Resume the previously paused/stopped timer.
 Same function as tm.resume(), but resets the timer value to 0.
 Only use for timer in CHRONO mode.
 
-tm.reshot()
+tm.reshoot()
 
 Start the ONE_SHOT timer again.
 Only use for timer in ONE_SHOT mode.

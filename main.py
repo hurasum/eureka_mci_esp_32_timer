@@ -28,7 +28,7 @@ class RotaryEncoder:
 
     def setCPS(self, value):
         """Set Encoder to CPS config"""
-        self.encoder_state_machine.set(value=value, min_val=100, max_val=200, range_mode=Rotary.RANGE_WRAP)
+        self.encoder_state_machine.set(value=value, min_val=100, max_val=400, range_mode=Rotary.RANGE_WRAP)
 
     def __getEncoderValue(self):
         """Thread for fast polling encoder value"""
@@ -226,11 +226,12 @@ class CoffeeGrinder:
 
     def __init__(self):
         self.__setPins()
+        self.hw_timer = machine.Timer(0)
         self.encoder = RotaryEncoder()
         self.display = DisplayFunctions()
         self.states = States(machine, self.display, self.pin_menu, self.encoder)
         self.states.startCheckStatesThread()
-        # self.__getShotTimes()
+        self.__getShotTimes()
 
     def __getShotTimes(self):
         """Get shot times from memory"""
@@ -293,6 +294,8 @@ class CoffeeGrinder:
         self.display.update = True
         if self.states.state == self.states.endless.STATE:
             self.edit_state = False
+            self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
+            return 
         if self.states.edit_state:
             self.states.edit_state = False
             self.encoder.setState(self.states.state_old)
@@ -314,13 +317,9 @@ class CoffeeGrinder:
             seconds = self.states.single.SECONDS
         elif self.states.state == self.states.double.STATE:
             seconds = self.states.double.SECONDS
-        text = "Timer: {:.2f} \r".format(round(seconds, 3))
-        # if seconds < 10:
-        #     text = "Timer:   {} \r".format(round(seconds, 3))
-        qty = round(seconds * self.states.cps, 1)
+        text = "Timer:  {:.2f} \r".format(round(seconds, 3))
+        qty = round(seconds * self.states.cps, 3)
         text_g = "QTY: {:.2f} g\r".format(qty)
-        # if qty < 10:
-        #     text_g = "QTY:   {} g\r".format(qty)
         self.display.lib.textClear(67, 200, text, color)
         if self.states.state != self.states.endless.STATE:
             self.display.textWrapper(67, 200, text, color)
@@ -337,24 +336,12 @@ class CoffeeGrinder:
             self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
             self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
             return
-        self.pin_out.value(True)
         if self.states.state == self.states.single.STATE:
             self.__sleepTime(self.states.single.SECONDS)
         elif self.states.state == self.states.double.STATE:
             self.__sleepTime(self.states.double.SECONDS)
         else:
-            self.display.textWrapper(67, 200, "Grind!")
-            count = 0.2
-            time.sleep(0.2)
-            while self.pin_start.value():
-                qty = round(count * self.states.cps, 3)
-                text_g = "QTY: {:.2f} g".format(qty)
-                # if qty < 10:
-                #     text_g = "QTY:   {} g\r".format(qty)
-                self.display.textWrapper(67, 225, text_g)
-                count += 0.01
-                time.sleep(0.01)
-            self.display.textWrapper(67, 200, "\r             ")
+            self.__endlessGrind()
         self.pin_out.value(False)
         self.display.update = True
         time.sleep(1)
@@ -363,14 +350,33 @@ class CoffeeGrinder:
 
     def __sleepTime(self, sleep):
         """sleep counter"""
-        # start_time = time.time()
-        end_time = 0
-        while end_time < sleep:
-            text = "Seconds: {:.2f}".format(round(sleep, 3))
+        self.hw_timer.init(mode=self.hw_timer.CHRONO)
+        self.hw_timer.start()
+        self.pin_out.value(True)
+        while self.hw_timer.isrunning():
+            sleep_count = sleep - (self.hw_timer.value() / 1000000)
+            text = "Timer:  {:.2f} \r".format(round(sleep_count, 3))
             self.display.textWrapper(67, 200, text, 0xec7d15)
-            sleep -= 0.01
+            if (self.hw_timer.value() / 1000000) > sleep:
+                self.hw_timer.stop()
             time.sleep(0.01)
-            # end_time = time.time() - start_time
+        self.hw_timer.deinit()
+
+    def __endlessGrind(self):
+        self.hw_timer.init(mode=self.hw_timer.CHRONO)
+        self.hw_timer.start()
+        self.pin_out.value(True)
+        self.display.textWrapper(67, 200, "Grind!")
+        time.sleep(0.2)
+        while self.pin_start.value():
+            count = (self.hw_timer.value() / 1000000) * self.states.cps
+            qty = round(count * self.states.cps, 3)
+            text_g = "QTY: {:.2f} g".format(qty)
+            self.display.textWrapper(67, 225, text_g)
+            time.sleep(0.01)
+        self.hw_timer.stop()
+        self.hw_timer.deinit()
+        self.display.textWrapper(67, 200, "\r             ")
 
     def runProgram(self):
         """Run Main Program"""
@@ -395,13 +401,6 @@ class CoffeeGrinder:
                 self.showCoffeData()
                 self.display.update = False
             time.sleep(0.1)
-            print(self.states.state)
-            print(self.encoder.value)
-            print(self.states.single.SECONDS)
-            print(self.states.double.SECONDS)
-            print(self.states.single.VALUE)
-            print(self.states.double.VALUE)
-            print(self.states.edit_state)
 
 
 if __name__ == '__main__':
