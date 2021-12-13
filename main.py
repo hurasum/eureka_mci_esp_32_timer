@@ -295,7 +295,7 @@ class CoffeeGrinder:
         if self.states.state == self.states.endless.STATE:
             self.edit_state = False
             self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
-            return 
+            return
         if self.states.edit_state:
             self.states.edit_state = False
             self.encoder.setState(self.states.state_old)
