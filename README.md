@@ -14,3 +14,6 @@ main.py<br>
 All other files are just for python typing
 
 Using this kit / configuration for my own Eureka MCI
+
+
+rotary encoder lib is from https://github.com/miketeachman/micropython-rotary
