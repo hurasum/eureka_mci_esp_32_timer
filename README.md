@@ -1,7 +1,5 @@
-# esp32_python
+# Custom Timer for Coffee Grinder Eureka MCI
 Micropython
-
-Custom Timer for Coffee Grinder Eureka MCI
 
 Needed Hardware: 
 ESP32 Microcontroller with ST7789(1,14 Zoll LCD) (Supported ILI9341, ILI9488, ST7789V and ST7735) based TFT modules in 4-wire SPI mode.
