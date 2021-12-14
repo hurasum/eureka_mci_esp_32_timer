@@ -8,8 +8,8 @@ Any sink-powered 5V relais capable of operating your mill motor.<br>
 5V power supply for Microcontroller<br>
 
 Needed Files for esp32:<br>
-rotary.py
-rotary_irq_esp.py
-main.py
+rotary.py<br>
+rotary_irq_esp.py<br>
+main.py<br>
 
 Using this kit / configuration for my own Eureka MCI
