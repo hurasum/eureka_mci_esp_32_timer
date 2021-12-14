@@ -11,5 +11,6 @@ Needed Files for esp32:<br>
 rotary.py<br>
 rotary_irq_esp.py<br>
 main.py<br>
+All other files are just for python typing
 
 Using this kit / configuration for my own Eureka MCI
