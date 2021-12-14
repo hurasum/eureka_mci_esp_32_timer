@@ -1,5 +1,16 @@
 """
-New Version :)
+Daniel Kriwitz
+
+Micropython Coffegrinder for TTGO - ESP32
+
+PINS used:
+Encoder:
+ - pin_num_clk - 25
+ - pin_num_dt - 26
+ - switch - 27
+Coffegrinder:
+ - start (input) - 33
+ - relais (output) - 32
 """
 
 
@@ -233,6 +244,29 @@ class CoffeeGrinder:
         self.states.startCheckStatesThread()
         self.__getShotTimes()
 
+    def __setPins(self):
+        """Set uc pins"""
+        self.pin_start = machine.Pin(
+            33,
+            mode=machine.Pin.IN,
+            pull=machine.Pin.PULL_DOWN,
+            handler=self.startGrinding,
+            trigger=machine.Pin.IRQ_HILEVEL,
+            acttime=0,
+            debounce=500000
+        )
+        self.pin_menu = machine.Pin(
+            27,
+            mode=machine.Pin.IN,
+            pull=machine.Pin.PULL_DOWN,
+            handler=self.setCPS,
+            trigger=machine.Pin.IRQ_FALLING,
+            acttime=0,
+            debounce=500000
+        )
+        self.pin_out = machine.Pin(32, mode=machine.Pin.INOUT)
+        self.pin_out.value(False)
+
     def __getShotTimes(self):
         """Get shot times from memory"""
         single_sec = machine.nvs_getint(self.SINGLE_SEC)
@@ -258,29 +292,6 @@ class CoffeeGrinder:
             double_sec = self.states.double.VALUE
             machine.nvs_setint(self.DOUBLE_SEC, int(double_sec))
         machine.nvs_setint(self.STATE, int(self.states.state))
-
-    def __setPins(self):
-        """Set uc pins"""
-        self.pin_start = machine.Pin(
-            33,
-            mode=machine.Pin.IN,
-            pull=machine.Pin.PULL_DOWN,
-            handler=self.startGrinding,
-            trigger=machine.Pin.IRQ_HILEVEL,
-            acttime=0,
-            debounce=500000
-        )
-        self.pin_menu = machine.Pin(
-            27,
-            mode=machine.Pin.IN,
-            pull=machine.Pin.PULL_DOWN,
-            handler=self.setCPS,
-            trigger=machine.Pin.IRQ_FALLING,
-            acttime=0,
-            debounce=500000
-        )
-        self.pin_out = machine.Pin(32, mode=machine.Pin.INOUT)
-        self.pin_out.value(False)
 
     def setCPS(self, pin):
         """Interrupt CPS"""
@@ -363,6 +374,7 @@ class CoffeeGrinder:
         self.hw_timer.deinit()
 
     def __endlessGrind(self):
+        """endless counter"""
         self.hw_timer.init(mode=self.hw_timer.CHRONO)
         self.hw_timer.start()
         self.pin_out.value(True)
