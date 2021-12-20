@@ -1,14 +1,14 @@
 """
 Daniel Kriwitz
 
-Micropython Coffegrinder for TTGO - ESP32
+Micropython Coffeegrinder for TTGO - ESP32
 
 PINS used:
 Encoder:
  - pin_num_clk - 25
  - pin_num_dt - 26
  - switch - 27
-Coffegrinder:
+Coffeegrinder:
  - start (input) - 33
  - relais (output) - 32
 """
@@ -25,7 +25,7 @@ from rotary import Rotary
 class RotaryEncoder:
     """Rotary Encoder config"""
     def __init__(self):
-        self.encoder_state_machine = RotaryIRQ(25, 26, min_val=0, max_val=2, reverse=True, range_mode=Rotary.RANGE_WRAP)
+        self.encoder_state_machine = RotaryIRQ(25, 26, min_val=1, max_val=3, reverse=True, range_mode=Rotary.RANGE_WRAP)
         self.value = 1
         _thread.start_new_thread("getEncoderValue", self.__getEncoderValue, ())
 
@@ -35,7 +35,7 @@ class RotaryEncoder:
 
     def setState(self, value):
         """Set Encoder to state config"""
-        self.encoder_state_machine.set(value=value, min_val=0, max_val=2, range_mode=Rotary.RANGE_WRAP)
+        self.encoder_state_machine.set(value=value, min_val=1, max_val=3, range_mode=Rotary.RANGE_WRAP)
 
     def setCPS(self, value):
         """Set Encoder to CPS config"""
@@ -55,7 +55,7 @@ class RotaryEncoder:
 class SingleState:
     """Single State class"""
     def __init__(self):
-        self.STATE = 0
+        self.STATE = 1
         self.TEXT = "Single Shot!"
         self.VALUE = 1
 
@@ -67,7 +67,7 @@ class SingleState:
 class DoubleState:
     """Double State class"""
     def __init__(self):
-        self.STATE = 1
+        self.STATE = 2
         self.TEXT = "Double Shot!"
         self.VALUE = 1
 
@@ -79,12 +79,14 @@ class DoubleState:
 class EndlessState:
     """Endless State class"""
     def __init__(self):
-        self.STATE = 2
+        self.STATE = 3
         self.TEXT = "Endless!"
 
 
 class States:
     """States class"""
+    STATE = "state"
+
     def __init__(self, machine_main, display_main, pin_menu, encoder):
         self.single = SingleState()
         self.double = DoubleState()
@@ -96,7 +98,6 @@ class States:
         self.pin_menu = pin_menu
         self.state = self.double.STATE
         self.edit_state = False
-        self.state_old = 0
         self.run = True
         self.edit_cps = False
         self.cps = 2
@@ -109,7 +110,7 @@ class States:
         """Thread for checking states"""
         self.state_old = self.encoder_state_machine.value
         while True:
-            ntf = _thread.wait(50)
+            ntf = _thread.wait(10)
             if ntf == _thread.EXIT:
                 # Terminate the thread
                 return
@@ -120,10 +121,10 @@ class States:
                 elif self.state == self.double.STATE:
                     self.double.VALUE = value
             else:
-                self.state = value
-                if self.state_old != self.state:
+                if self.state != value:
                     self.run = True
-                    self.state_old = self.state
+                    self.state = value
+                    machine.nvs_setint(self.STATE, int(self.state))
 
     def editCPS(self):
         """Edit CPS"""
@@ -189,22 +190,25 @@ class DisplayFunctions:
 
     def doubleCup(self):
         """draw 2 cups"""
-        self.__cup(27, 90)
-        self.__cup(87, 90)
+        self.__cup(27, 90, 0x00CDFF)
+        self.__cup(87, 90, 0x00CDFF)
 
     def singleCup(self):
         """draw single cup"""
-        self.__cup(57, 90)
+        self.__cup(57, 90, 0xFF007F)
 
     def endLess(self, x=68, y=110, r=20):
         """draw endles sign"""
-        self.lib.circle(x-20, y, r, 0xFFFFFF)
-        self.lib.circle(x+20, y, r, 0xFFFFFF)
+        color = 0x840EEB
+        self.lib.circle(x-20, y, r, color)
+        self.lib.circle(x+20, y, r, color)
+        self.lib.circle(x-20, y, r-2, color)
+        self.lib.circle(x+20, y, r-2, color)
 
-    def __cup(self, x, y):
+    def __cup(self, x, y, color):
         """draw single cup"""
-        self.lib.rect(x, y, 35, 35, 0xFFFFFF, fillcolor=0xFFFFFF)
-        self.lib.arc(x-2, y+15, 12, 2, 180, 360, 0xFFFFFF)
+        self.lib.rect(x, y, 35, 35, color, fillcolor=color)
+        self.lib.arc(x-2, y+15, 12, 2, 180, 360, color)
 
     def textWrapper(self, x, y, text, color=0xFFFFFF):
         """Function to warp text"""
@@ -213,11 +217,11 @@ class DisplayFunctions:
     def initText(self):
         """Init Text"""
         self.lib.set_fg(0x000000)  # background color
-        text = "Initialize"
+        text = "Press Button"
         self.textWrapper(67, 110, text)
-        text = "Coffegrinder"
+        text = "to edit CPS"
         self.textWrapper(67, 130, text)
-        time.sleep(4)
+        time.sleep(2)
 
     def __textCenterOffset(self, text):
         """Center offset"""
@@ -242,7 +246,6 @@ class CoffeeGrinder:
         self.display = DisplayFunctions()
         self.states = States(machine, self.display, self.pin_menu, self.encoder)
         self.states.startCheckStatesThread()
-        self.__getShotTimes()
 
     def __setPins(self):
         """Set uc pins"""
@@ -273,16 +276,17 @@ class CoffeeGrinder:
         double_sec = machine.nvs_getint(self.DOUBLE_SEC)
         cps = machine.nvs_getint(self.CPS)
         state = machine.nvs_getint(self.STATE)
-        if state:
+        if state is not None:
             self.states.state = state
-        if single_sec:
+            self.encoder.setState(state)
+        if single_sec is not None:
             self.states.single.VALUE = single_sec
-        if double_sec:
+        if double_sec is not None:
             self.states.double.VALUE = double_sec
-        if cps:
+        if cps is not None:
             self.states.cps = cps / 100
 
-    def setCoffeGrindTime(self):
+    def setCoffeeGrindTime(self):
         """Update Grind Time"""
         self.display.update = True
         if self.states.state == self.states.single.STATE:
@@ -291,7 +295,6 @@ class CoffeeGrinder:
         elif self.states.state == self.states.double.STATE:
             double_sec = self.states.double.VALUE
             machine.nvs_setint(self.DOUBLE_SEC, int(double_sec))
-        machine.nvs_setint(self.STATE, int(self.states.state))
 
     def setCPS(self, pin):
         """Interrupt CPS"""
@@ -309,7 +312,7 @@ class CoffeeGrinder:
             return
         if self.states.edit_state:
             self.states.edit_state = False
-            self.encoder.setState(self.states.state_old)
+            self.encoder.setState(self.states.state)
         else:
             self.states.edit_state = True
             if self.states.state == self.states.single.STATE:
@@ -318,7 +321,7 @@ class CoffeeGrinder:
                 self.encoder.setTime(self.states.double.VALUE)
         self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
 
-    def showCoffeData(self):
+    def showCoffeeData(self):
         """Show Display Data"""
         color = 0xFFFFFF
         if self.states.edit_state:
@@ -397,20 +400,22 @@ class CoffeeGrinder:
             self.states.editCPS()
             machine.nvs_setint(self.CPS, int(self.states.cps * 100))
         self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING, handler=self.setEdit)
-        self.states.state = self.states.double.STATE
+        self.__getShotTimes()
         self.states.run = True
+        self.display.update = True
         self.states.edit_state = False
         while True:
-            if (self.states.state == self.states.single.STATE) and self.states.run:
-                self.states.runState(self.states.single, self.display.singleCup)
-            elif (self.states.state == self.states.double.STATE) and self.states.run:
-                self.states.runState(self.states.double, self.display.doubleCup)
-            elif (self.states.state == self.states.endless.STATE) and self.states.run:
-                self.states.runState(self.states.endless, self.display.endLess)
+            if self.states.run:
+                if self.states.state == self.states.single.STATE:
+                    self.states.runState(self.states.single, self.display.singleCup)
+                elif self.states.state == self.states.double.STATE:
+                    self.states.runState(self.states.double, self.display.doubleCup)
+                elif self.states.state == self.states.endless.STATE:
+                    self.states.runState(self.states.endless, self.display.endLess)
             if self.states.edit_state:
-                self.setCoffeGrindTime()
+                self.setCoffeeGrindTime()
             if self.display.update:
-                self.showCoffeData()
+                self.showCoffeeData()
                 self.display.update = False
             time.sleep(0.1)
 
