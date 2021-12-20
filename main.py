@@ -275,6 +275,7 @@ class CoffeeGrinder:
         self.display = DisplayFunctions()
         self.states = States(machine, self.display, self.pin_menu, self.encoder)
         self.states.startCheckStatesThread()
+        self.__getCPSFormMemory()
 
     def __setPins(self):
         """Set uc pins"""
@@ -303,7 +304,6 @@ class CoffeeGrinder:
         """Get shot times from memory"""
         single_sec = machine.nvs_getint(self.SINGLE_SEC)
         double_sec = machine.nvs_getint(self.DOUBLE_SEC)
-        cps = machine.nvs_getint(self.CPS)
         state = machine.nvs_getint(self.STATE)
         if state is not None:
             self.states.state = state
@@ -312,6 +312,10 @@ class CoffeeGrinder:
             self.states.single.VALUE = single_sec
         if double_sec is not None:
             self.states.double.VALUE = double_sec
+
+    def __getCPSFormMemory(self):
+        """load cps"""
+        cps = machine.nvs_getint(self.CPS)
         if cps is not None:
             self.states.cps = cps / 100
 
