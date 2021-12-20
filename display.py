@@ -170,7 +170,7 @@ class TFT:
         """
         pass
 
-    def ellipse(self, x, y, rx, ry, opt, color: Optional = None, fillcolor: Optional = None):
+    def ellipse(self, x, y, rx, ry, opt=15, color: Optional = None, fillcolor: Optional = None):
         """
         Draw the circle with center at (x,y) and radius r.
         If color is not given, current foreground color is used.
