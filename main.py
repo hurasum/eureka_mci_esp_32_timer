@@ -55,32 +55,64 @@ class RotaryEncoder:
 class SingleState:
     """Single State class"""
     def __init__(self):
-        self.STATE = 1
-        self.TEXT = "Single Shot!"
+        self.__state = 1
+        self.__text = "Single Shot!"
         self.VALUE = 1
 
     @property
+    def num(self):
+        """state"""
+        return self.__state
+
+    @property
+    def text(self):
+        """text"""
+        return self.__text
+
+    @property
     def SECONDS(self):
+        """SECONDS"""
         return self.VALUE / 20
 
 
 class DoubleState:
     """Double State class"""
     def __init__(self):
-        self.STATE = 2
-        self.TEXT = "Double Shot!"
+        self.__state = 2
+        self.__text = "Double Shot!"
         self.VALUE = 1
 
     @property
+    def num(self):
+        """state"""
+        return self.__state
+
+    @property
+    def text(self):
+        """text"""
+        return self.__text
+
+    @property
     def SECONDS(self):
+        """SECONDS"""
         return self.VALUE / 20
 
 
 class EndlessState:
     """Endless State class"""
     def __init__(self):
-        self.STATE = 3
-        self.TEXT = "Endless!"
+        self.__state = 3
+        self.__text = "Endless!"
+
+    @property
+    def num(self):
+        """state"""
+        return self.__state
+
+    @property
+    def text(self):
+        """text"""
+        return self.__text
 
 
 class States:
@@ -96,7 +128,7 @@ class States:
         self.uc = machine_main
         self.display = display_main
         self.pin_menu = pin_menu
-        self.state = self.double.STATE
+        self.state = self.double.num
         self.edit_state = False
         self.run = True
         self.edit_cps = False
@@ -108,7 +140,6 @@ class States:
 
     def __checkStates(self):
         """Thread for checking states"""
-        self.state_old = self.encoder_state_machine.value
         while True:
             ntf = _thread.wait(10)
             if ntf == _thread.EXIT:
@@ -116,15 +147,14 @@ class States:
                 return
             value = self.encoder_state_machine.value
             if self.edit_state:
-                if self.state == self.single.STATE:
+                if self.state == self.single.num:
                     self.single.VALUE = value
-                elif self.state == self.double.STATE:
+                elif self.state == self.double.num:
                     self.double.VALUE = value
             else:
                 if self.state != value:
                     self.run = True
                     self.state = value
-                    machine.nvs_setint(self.STATE, int(self.state))
 
     def editCPS(self):
         """Edit CPS"""
@@ -139,7 +169,6 @@ class States:
             if not self.pin_menu.value():
                 break
             time.sleep(0.1)
-        self.encoder_state_machine.setState(value=self.double.STATE)
         self.edit_cps = False
         self.display.lib.clear()
 
@@ -148,9 +177,9 @@ class States:
         self.display.update = True
         self.display.lib.clear()
         function_cup()
-        self.display.textWrapper(67, 30, state.TEXT)
+        self.display.textWrapper(67, 30, state.text)
         self.run = False
-
+        machine.nvs_setint(self.STATE, int(self.state))
 
 class DisplayFunctions:
     """Display  functions"""
@@ -289,10 +318,10 @@ class CoffeeGrinder:
     def setCoffeeGrindTime(self):
         """Update Grind Time"""
         self.display.update = True
-        if self.states.state == self.states.single.STATE:
+        if self.states.state == self.states.single.num:
             single_sec = self.states.single.VALUE
             machine.nvs_setint(self.SINGLE_SEC, int(single_sec))
-        elif self.states.state == self.states.double.STATE:
+        elif self.states.state == self.states.double.num:
             double_sec = self.states.double.VALUE
             machine.nvs_setint(self.DOUBLE_SEC, int(double_sec))
 
@@ -306,7 +335,7 @@ class CoffeeGrinder:
         self.pin_menu.init(trigger=machine.Pin.IRQ_DISABLE)
         time.sleep(0.1)
         self.display.update = True
-        if self.states.state == self.states.endless.STATE:
+        if self.states.state == self.states.endless.num:
             self.edit_state = False
             self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
             return
@@ -315,9 +344,9 @@ class CoffeeGrinder:
             self.encoder.setState(self.states.state)
         else:
             self.states.edit_state = True
-            if self.states.state == self.states.single.STATE:
+            if self.states.state == self.states.single.num:
                 self.encoder.setTime(self.states.single.VALUE)
-            elif self.states.state == self.states.double.STATE:
+            elif self.states.state == self.states.double.num:
                 self.encoder.setTime(self.states.double.VALUE)
         self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
 
@@ -327,15 +356,15 @@ class CoffeeGrinder:
         if self.states.edit_state:
             color = 0xFF0000
         seconds = 0.1
-        if self.states.state == self.states.single.STATE:
+        if self.states.state == self.states.single.num:
             seconds = self.states.single.SECONDS
-        elif self.states.state == self.states.double.STATE:
+        elif self.states.state == self.states.double.num:
             seconds = self.states.double.SECONDS
         text = "Timer:  {:.2f} \r".format(round(seconds, 3))
         qty = round(seconds * self.states.cps, 3)
         text_g = "QTY: {:.2f} g\r".format(qty)
         self.display.lib.textClear(67, 200, text, color)
-        if self.states.state != self.states.endless.STATE:
+        if self.states.state != self.states.endless.num:
             self.display.textWrapper(67, 200, text, color)
             self.display.textWrapper(67, 225, text_g, color)
 
@@ -350,9 +379,9 @@ class CoffeeGrinder:
             self.pin_menu.init(trigger=machine.Pin.IRQ_FALLING)
             self.pin_start.init(trigger=machine.Pin.IRQ_HILEVEL)
             return
-        if self.states.state == self.states.single.STATE:
+        if self.states.state == self.states.single.num:
             self.__sleepTime(self.states.single.SECONDS)
-        elif self.states.state == self.states.double.STATE:
+        elif self.states.state == self.states.double.num:
             self.__sleepTime(self.states.double.SECONDS)
         else:
             self.__endlessGrind()
@@ -405,19 +434,21 @@ class CoffeeGrinder:
         self.display.update = True
         self.states.edit_state = False
         while True:
+            time.sleep(0.1)
             if self.states.run:
-                if self.states.state == self.states.single.STATE:
+                if self.states.state == self.states.single.num:
                     self.states.runState(self.states.single, self.display.singleCup)
-                elif self.states.state == self.states.double.STATE:
+                elif self.states.state == self.states.double.num:
                     self.states.runState(self.states.double, self.display.doubleCup)
-                elif self.states.state == self.states.endless.STATE:
+                elif self.states.state == self.states.endless.num:
                     self.states.runState(self.states.endless, self.display.endLess)
+                else:
+                    self.display.textWrapper(57, 90, "State Error")
             if self.states.edit_state:
                 self.setCoffeeGrindTime()
             if self.display.update:
                 self.showCoffeeData()
                 self.display.update = False
-            time.sleep(0.1)
 
 
 if __name__ == '__main__':
